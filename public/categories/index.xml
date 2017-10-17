@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Categories on Levi Thatcher</title>
+    <link>/hugo-goa-demo/categories/</link>
+    <description>Recent content in Categories on Levi Thatcher</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-US</language>
+    <lastBuildDate>Sun, 02 Oct 2016 22:55:05 -0400</lastBuildDate>
+    
+	<atom:link href="/hugo-goa-demo/categories/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>About</title>
+      <link>/hugo-goa-demo/categories/about/</link>
+      <pubDate>Sun, 02 Oct 2016 22:55:05 -0400</pubDate>
+      
+      <guid>/hugo-goa-demo/categories/about/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Ad</title>
+      <link>/hugo-goa-demo/categories/ad/</link>
+      <pubDate>Sun, 02 Oct 2016 15:59:13 -0400</pubDate>
+      
+      <guid>/hugo-goa-demo/categories/ad/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Articles</title>
+      <link>/hugo-goa-demo/categories/articles/</link>
+      <pubDate>Sun, 02 Oct 2016 22:55:05 -0400</pubDate>
+      
+      <guid>/hugo-goa-demo/categories/articles/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>Propaganda</title>
+      <link>/hugo-goa-demo/categories/propaganda/</link>
+      <pubDate>Sat, 01 Oct 2016 16:59:13 -0400</pubDate>
+      
+      <guid>/hugo-goa-demo/categories/propaganda/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>R</title>
+      <link>/hugo-goa-demo/categories/r/</link>
+      <pubDate>Thu, 23 Jul 2015 21:13:14 -0500</pubDate>
+      
+      <guid>/hugo-goa-demo/categories/r/</guid>
+      <description></description>
+    </item>
+    
+  </channel>
+</rss>

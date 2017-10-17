@@ -1,0 +1,60 @@
+## Basic Configuration
+
+baseurl = "https://shenoybr.github.io/hugo-goa-demo/" 
+builddrafts = false
+canonifyurls = false
+languageCode = "en-US"
+
+contentdir = "content"
+layoutdir = "layouts"
+publishdir = "public"
+
+author = "Levi Thatcher"
+title = "Levi Thatcher"
+
+theme = "hugo-goa"
+
+## Hugo Built-in Features
+disqusShortname = "https-shenoybr-github-io-hugo-goa-demo" # Comment out to disable Disqus.
+googleAnalytics = "XYZ"
+enableRobotsTXT = true
+
+## Site Settings
+[params]
+author = "Levi Thatcher"
+intro = "Purveyer of machine learning infrastructure"
+description = "VP, Data Science @ Health Catalyst"
+
+authorimage = "headshot.jpg"
+dateformat = "Jan 2, 2006"
+
+## Site Meta Settings
+[params.meta]
+description = "Simple minimalist theme"
+keywords = "minimalist,blog,goa,hugo,developer"
+
+## Social Accounts
+[params.social]
+github = "levithatcher"
+linkedin = "levithatcher"
+twitter = "levithatcher"
+quora = "levithatcher"
+email = "levithatcher@gmail.com"
+
+## Extras
+[params.extra]
+copyright = "© 2017. Levi Thatcher. [All Rights Reserved](http://creativecommons.org/licenses/by/3.0/)." 
+poweredby = true
+highlightjs = true
+
+## Main Menu
+[[menu.main]]
+    name = "blog"
+    weight = 100
+    identifier = "blog"
+    url = "/blog/"
+[[menu.main]]
+    name = "about"
+    identifier = "about"
+    weight = 200
+    url = "/about/"

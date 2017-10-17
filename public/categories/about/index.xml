@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>About on Levi Thatcher</title>
+    <link>/hugo-goa-demo/categories/about/</link>
+    <description>Recent content in About on Levi Thatcher</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-US</language>
+    <lastBuildDate>Sun, 02 Oct 2016 22:55:05 -0400</lastBuildDate>
+    
+	<atom:link href="/hugo-goa-demo/categories/about/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>About</title>
+      <link>/hugo-goa-demo/about/</link>
+      <pubDate>Sun, 02 Oct 2016 22:55:05 -0400</pubDate>
+      
+      <guid>/hugo-goa-demo/about/</guid>
+      <description>Levi did his graduate work at the University of Utah, studying atmospheric predictability in the chaotic context of hurricane development.
+Now at Health Catalyst, Levi leads the company’s machine learning efforts and founded healthcare.ai, the first open-source machine learning project focused on healthcare outcomes.
+He’s now integrating healthcare.ai into each of Health Catalyst’s products and working to make healthcare.ai the international center of collaboration for healthcare machine learning.</description>
+    </item>
+    
+  </channel>
+</rss>
