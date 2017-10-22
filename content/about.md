@@ -10,8 +10,8 @@ title = "About"
 showpagemeta = false
 +++
 
-Levi did his graduate work at the University of Utah, studying atmospheric predictability in the chaotic context of hurricane development.
+Levi did his graduate work at the University of Utah, studying atmospheric predictability in the context of hurricane development.
  
 Now at Health Catalyst, Levi leads the company’s machine learning efforts and founded healthcare.ai, the first open-source machine learning project focused on healthcare outcomes.
  
-He’s now integrating healthcare.ai into each of Health Catalyst’s products and working to make healthcare.ai the international center of collaboration for healthcare machine learning.
+He’s now integrating healthcare.ai into Health Catalyst’s core products and working to make healthcare.ai the international center of collaboration for healthcare machine learning.

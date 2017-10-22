@@ -23,6 +23,7 @@ enableRobotsTXT = true
 author = "Levi Thatcher"
 intro = "Purveyer of machine learning infrastructure"
 description = "VP, Data Science @ Health Catalyst"
+staticDir = "static"
 
 authorimage = "headshot.jpg"
 dateformat = "Jan 2, 2006"
@@ -45,6 +46,8 @@ email = "levithatcher@gmail.com"
 copyright = "© 2017. Levi Thatcher. [All Rights Reserved](http://creativecommons.org/licenses/by/3.0/)." 
 poweredby = true
 highlightjs = true
+
+ignoreFiles = ["\\.Rmd$", "\\.Rmarkdown$", "_files$", "_cache$"]
 
 ## Main Menu
 [[menu.main]]
