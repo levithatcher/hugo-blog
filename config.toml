@@ -1,6 +1,6 @@
 ## Basic Configuration
 
-baseurl = "https://shenoybr.github.io/hugo-goa-demo/" 
+baseurl = "/" 
 builddrafts = false
 canonifyurls = false
 languageCode = "en-US"
@@ -15,7 +15,6 @@ title = "Levi Thatcher"
 theme = "hugo-goa"
 
 ## Hugo Built-in Features
-disqusShortname = "https-shenoybr-github-io-hugo-goa-demo" # Comment out to disable Disqus.
 googleAnalytics = "XYZ"
 enableRobotsTXT = true
 
