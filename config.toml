@@ -1,6 +1,6 @@
 ## Basic Configuration
 
-baseurl = "https://levithatcher.github.io/hugo-blog/" 
+baseurl = "/" 
 builddrafts = false
 canonifyurls = false
 languageCode = "en-US"
