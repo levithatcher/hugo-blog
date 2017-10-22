@@ -4,3 +4,5 @@
 .Ruserdata
 .Rproj.user
 public/*
+static/.DS_Store
+static/_images/.DS_Store
