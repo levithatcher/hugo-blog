@@ -7,3 +7,4 @@ public/*
 .DS_Store
 static/.DS_Store
 static/img/.DS_Store
+__pycache__
