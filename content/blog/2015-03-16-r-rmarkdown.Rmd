@@ -7,7 +7,7 @@ date: '2015-03-16T21:13:14-05:00'
 knitr::opts_chunk$set(collapse = TRUE)
 ```
 
-**Note: this post was originally done in D3, but I rewrote because I now prefer static blog figures**
+*Note: this post was originally done in D3, but I rewrote because I now prefer static blog figures*
 
 ## Background
 
