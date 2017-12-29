@@ -4,7 +4,7 @@
 .Ruserdata
 .Rproj.user
 public/*
-.DS_Store
-static/.DS_Store
-static/img/.DS_Store
+**/.DS_Store
+**.RData
+**__packages
 __pycache__

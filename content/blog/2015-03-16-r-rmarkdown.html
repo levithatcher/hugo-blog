@@ -44,38 +44,13 @@ colnames(df_final) &lt;- c(&quot;region&quot;,&quot;value&quot;)</code></pre>
 </div>
 <div id="plot-the-choropleth" class="section level3">
 <h3>Plot the choropleth</h3>
-<p>We’ll use a function to make it easily repeatable. Hooray!</p>
-<pre class="r"><code>create_choropleth &lt;- function(df, # cols have to be only &quot;region&quot; then &quot;value&quot;
-                              title,
-                              legend,
-                              num_colors=1,
-                              NA_replace=NULL) {
-  
-  library(choroplethr)
-  library(choroplethrMaps)
-  library(ggplot2)
-  
-  # Fill NA cells with something (so choropleth works)
-  if (!missing(NA_replace)) {
-    df[&quot;value&quot;][is.na(df[&quot;value&quot;])] &lt;- NA_replace
-  }
-  
-  # Plot data on a US map
-  county_choropleth(df, num_colors = num_colors, legend = legend) +
-    ggtitle(title) +
-    theme(plot.title = element_text(hjust = 0.5))
-}
-
-create_choropleth(df_final,
-                  title = &#39;2015 Diabetes Rates&#39;,
-                  legend = &#39;Rate from 0 to 1&#39;,
-                  num_colors = 7)</code></pre>
-<p><img src="/blog/2015-03-16-r-rmarkdown_files/figure-html/choropleth-1.png" width="1440" /></p>
+<p>We’ll use a function to make it easily repeatable.</p>
+<p><img src="/blog/2015-03-16-r-rmarkdown_files/figure-html/choropleth-1.png" width="650px" /></p>
 </div>
 </div>
 <div id="the-result" class="section level2">
 <h2>The result</h2>
-<p>Voilà, a choropleth! Since this isn’t a post on diabetes, we can simply say that the deep south has a serious issues with chronic disease.</p>
+<p>Voilà, a choropleth! Since this isn’t a post on diabetes, we can simply say that the deep south has serious issues with chronic disease.</p>
 <p>The beautiful thing about this R package is that you can fairly quickly plot any of the awesome county-level data* you can find <a href="http://www.countyhealthrankings.org/rankings/data">here</a>, <a href="https://www.data.gov">here</a>, <a href="https://www.census.gov">here</a>, or <a href="https://www.cdc.gov/datastatistics/index.html">here</a>.</p>
 <p>Speaking of maps, if you’re in the market for a US map for the house, you probably can’t do better than <a href="http://www.imusgeographics.com/usa-maps">this</a>–it was made by one man in a <a href="http://www.slate.com/articles/arts/culturebox/2012/01/the_best_american_wall_map_david_imus_the_essential_geography_of_the_united_states_of_america_.html">farm house in Oregon</a>.</p>
 <p>* Note you’ll have to make sure the data has a <a href="https://en.wikipedia.org/wiki/FIPS_county_code">FIPS Code</a></p>

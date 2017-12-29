@@ -1,11 +1,15 @@
 ---
 title: "Simple choropleths in R"
-date: '2015-03-16T21:13:14-05:00'
+date: '2015-03-16'
 ---
-  
+
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(collapse = TRUE)
+library(knitr)
+knitr::opts_chunk$set(cache = TRUE, warning = FALSE, message = FALSE, 
+                      echo = TRUE, dpi = 200, out.width='650px',
+                      cache.lazy = FALSE)
 ```
+
 
 *Note: this post was originally done in D3, but I rewrote because I now prefer static blog figures*
 
@@ -56,9 +60,9 @@ colnames(df_final) <- c("region","value")
 
 ### Plot the choropleth
 
-We'll use a function to make it easily repeatable. Hooray!
+We'll use a function to make it easily repeatable.
 
-```{r, message=FALSE, warning=FALSE}
+```{r choropleth, echo=FALSE, fig.fullwidth=TRUE, message=FALSE, warning=FALSE}
 create_choropleth <- function(df, # cols have to be only "region" then "value"
                               title,
                               legend,
@@ -83,12 +87,13 @@ create_choropleth <- function(df, # cols have to be only "region" then "value"
 create_choropleth(df_final,
                   title = '2015 Diabetes Rates',
                   legend = 'Rate from 0 to 1',
-                  num_colors = 7)
+                  num_colors = 7,
+                  NA_replace = 0)
 ```
 
 ## The result
 
-Voilà, a choropleth! Since this isn't a post on diabetes, we can simply say that the deep south has a serious issues with chronic disease.
+Voilà, a choropleth! Since this isn't a post on diabetes, we can simply say that the deep south has serious issues with chronic disease.
 
 The beautiful thing about this R package is that you can fairly quickly plot any of the awesome county-level data* you can find [here](http://www.countyhealthrankings.org/rankings/data), [here](https://www.data.gov), [here](https://www.census.gov), or [here](https://www.cdc.gov/datastatistics/index.html).
 
