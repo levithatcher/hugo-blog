@@ -12,7 +12,7 @@ knitr::opts_chunk$set(cache = TRUE, warning = FALSE, message = FALSE,
                       dpi = 200, out.width='650px', fig.width=8, fig.height=4)
 ```
 
-*Note: this post was originally done in D3, but I rewrote because I now prefer static figures*
+*Note: post was originally in D3, but I rewrote because I now prefer static figures*
 
 ## Background
 
@@ -24,7 +24,7 @@ To kick things off, I wanted to show how easy it is to create choropleths with R
 
 ### Getting public health data
 
-First, let's pull 2015 county-level data from [County Health Rankings](http://www.countyhealthrankings.org/rankings/data), which is a fantastic place to analyze state by geographic health differences in the US.
+First, let's pull 2015 county-level data (in CSV format) from [County Health Rankings](http://www.countyhealthrankings.org/rankings/data), which is a fantastic place to analyze state by geographic health differences in the US.
 
 We pull the data into R...
   
@@ -100,4 +100,7 @@ The beautiful thing about this R package is that you can fairly quickly plot any
 
 Speaking of maps, if you're in the market for a US map for the house, you probably can't do better than [this](http://www.imusgeographics.com/usa-maps)--it was made by one man in a [farm house in Oregon](http://www.slate.com/articles/arts/culturebox/2012/01/the_best_american_wall_map_david_imus_the_essential_geography_of_the_united_states_of_america_.html).
 
-\* Note you'll have to make sure the data has a [FIPS Code](https://en.wikipedia.org/wiki/FIPS_county_code)
+Note that
+
+- The raw notebook can be found [here](https://github.com/levithatcher/hugo-blog/tree/master/content/blog)
+- *Data for choropleths needs a [FIPS Code](https://en.wikipedia.org/wiki/FIPS_county_code)
