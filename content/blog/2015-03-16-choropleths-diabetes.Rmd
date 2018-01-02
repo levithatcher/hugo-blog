@@ -1,16 +1,15 @@
 ---
 title: "Simple choropleths in R"
+excerpt: "Making it easy to lay data on maps"
 date: '2015-03-16'
-output:
-  blogdown::html_page:
-    fig_width: 6
-    dev: "svg"
+
 ---
 
 ```{r setup, include=FALSE}
 library(knitr)
 knitr::opts_chunk$set(cache = TRUE, warning = FALSE, message = FALSE, 
-                      echo = TRUE, dpi = 200, dev = 'png')
+                      echo = TRUE, dev = 'png',
+                      dpi = 200, out.width='650px', fig.width=8, fig.height=4)
 ```
 
 *Note: this post was originally done in D3, but I rewrote because I now prefer static figures*
