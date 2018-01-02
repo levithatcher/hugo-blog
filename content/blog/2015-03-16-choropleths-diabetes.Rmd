@@ -94,8 +94,6 @@ create_choropleth(df_final,
                   NA_replace = 0)
 ```
 
-![](/figs/2015-03-16-choropleths-diabetes/choropleth-1.png)
-
 ## The result
 
 Voilà, a choropleth! Since this isn't a post on diabetes, we can simply say that the deep south has serious issues with chronic disease.
