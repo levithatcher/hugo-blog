@@ -10,8 +10,7 @@ output:
 ```{r setup, include=FALSE}
 library(knitr)
 knitr::opts_chunk$set(cache = TRUE, warning = FALSE, message = FALSE, 
-                      echo = TRUE, dpi = 200, out.width='650px',
-                      dev = 'png')
+                      echo = TRUE, dpi = 200, dev = 'png')
 ```
 
 *Note: this post was originally done in D3, but I rewrote because I now prefer static figures*
