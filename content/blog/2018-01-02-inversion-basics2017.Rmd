@@ -2,7 +2,7 @@
 title: "SLC 2017 Air Quality"
 excerpt: "The state of the air"
 date: '2018-01-02'
-
+draft: true
 ---
 
 ```{r setup, include=FALSE}
