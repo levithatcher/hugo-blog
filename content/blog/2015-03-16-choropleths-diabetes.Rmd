@@ -2,7 +2,6 @@
 title: "Simple choropleths in R"
 excerpt: "Making it easy to lay data on maps"
 date: '2015-03-16'
-
 ---
 
 ```{r setup, include=FALSE}
@@ -63,7 +62,7 @@ colnames(df_final) <- c("region","value")
 
 We'll use a function to make it easily repeatable.
 
-```{r choropleth, echo=FALSE, fig.fullwidth=TRUE, message=FALSE, warning=FALSE}
+```{r choropleth, echo=TRUE, fig.fullwidth=TRUE, message=FALSE, warning=FALSE}
 create_choropleth <- function(df, # cols have to be only "region" then "value"
                               title,
                               legend,
