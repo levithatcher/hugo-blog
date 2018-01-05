@@ -24,9 +24,24 @@ The data we'll be using for the analysis comes from the [UDAQ](https://deq.utah.
 
 We'll pull 2017 hourly data from [here](https://aqs.epa.gov/api) (you'll have to register) with these parameters:
 
-ADD figure that was saved!!
+<img src="figs/2017-01-06-inversion-basics/data_download_parameters.png" width="800">
 
 ## Analysis
+
+### Load in the data
+
+```{r}
+library(dplyr)
+df <- read.csv('../data/2015-2017SLCHawthornePM25.csv')
+df
+```
+
+Reduce tibble to only desired columns
+
+```{r}
+df_slim <- select(df, Date.Local, X24.Hour.Local, Sample.Measurement)
+df_slim
+```
 
 
 
