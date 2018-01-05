@@ -36,10 +36,12 @@ df <- read.csv('../data/2015-2017SLCHawthornePM25.csv')
 df
 ```
 
-Reduce tibble to only desired columns
+Reduce tibble to only desired columns and code DateTime column
 
 ```{r}
-df_slim <- select(df, Date.Local, X24.Hour.Local, Sample.Measurement)
+library(dplyr)
+df$DateTime <- as.POSIXct(paste(df$Date.Local, df$X24.Hour.Local), format="%Y-%m-%d %H:%M")
+df_slim <- select(df, DateTime, Sample.Measurement)
 df_slim
 ```
 
