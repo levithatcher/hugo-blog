@@ -14,23 +14,30 @@ knitr::opts_chunk$set(cache = TRUE, warning = FALSE, message = FALSE,
 
 ## Background on SLC Air
 
-For those unfamiliar, SLC is famous for its winter temperature inversions. These things are famous for trapping emissions and making life unpleasant.
+For those unfamiliar, SLC is famous for its winter temperature inversions. These things are famous for trapping emissions and making life unpleasant. There's tons of great background [here](http://home.chpc.utah.edu/~whiteman/PM2.5/PM2.5.html) and [here](https://ehp.niehs.nih.gov/1104349/). The focus of _today's_ post will be digging into 2017 values of *PM2.5* in SLC, as this type of pollutant is most frequently linked to [negative health outcomes](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4740125/).
 
 ![](http://health.utah.gov/utahair/SLC_51ug-m3.jpg)
 
+## Get the data
+
+The data we'll be using for the analysis comes from the [UDAQ](https://deq.utah.gov/Divisions/daq/index.htm) via the EPA, which keeps detailed air quality data for various sites in SL County. This post will grab data from Hawthorne Elementary in SLC proper, as that site is noted as being the [most accurate](http://home.chpc.utah.edu/~whiteman/PM2.5/PM2.5.html#current_conc) in the valley (and is [actually the site used](http://home.chpc.utah.edu/~whiteman/PM2.5/PM2.5.html#current_conc) to determine whether the valley meets EPA standards).
+
+We'll pull 2017 hourly data from [here](https://aqs.epa.gov/api) (you'll have to register) with these parameters:
+
+ADD figure that was saved!!
+
+## Analysis
 
 
 
+### Time series for 2017
 
 
-This is an [R Markdown](http://rmarkdown.rstudio.com) Notebook. When you execute code within the notebook, the results appear beneath the code. 
+### Periodicity in the data
 
-Try executing this chunk by clicking the *Run* button within the chunk or by placing your cursor inside it and pressing *Cmd+Shift+Enter*. 
 
-```{r}
-plot(cars)
-```
+## Conclusions and next steps
 
-Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Cmd+Option+I*.
 
-When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Cmd+Shift+K* to preview the HTML file).
+* Hawthorne Elementary is site 490353006
+
