@@ -46,14 +46,25 @@ df_slim
 ```
 
 ### Time series for 2013-2017
-```{r}
+```{r, echo=TRUE}
 library(ggplot2)
-p1 <- ggplot(data=df_slim, aes(x = DateTime, y = Sample.Measurement)) +
+library(scales)
+ggplot(data=df_slim, aes(x = DateTime, y = Sample.Measurement)) +
   geom_point() +
-  geom_smooth(method = 'lm')
-p1 + scale_y_log10(limits = c(1,NA), breaks = c(1,20,40,60,80,100))
-p1 + scale_x_continuous(label = "Time of Year")
-  
+  stat_smooth_func(geom="text", method="lm", hjust=0, parse=TRUE) + 
+  geom_smooth(method = 'lm') +
+  labs(title = "PM2.5 in SLC from 2013 - 2017", x = "Year") +
+  scale_y_log10(limits = c(1,NA), breaks = c(1,20,40,60,80,100)) +
+  scale_x_datetime( labels=date_format("%m-%Y"), breaks = date_breaks("1 year"))
+```
+
+### Trend line
+
+The trend looks like it's negative, right? That's engouraging! Anecdotally in SLC, each winter seems as bad as the last (perhaps because the issue is receving more attention each year).
+
+What exactly is the trend?
+```{r}
+lm(Sample.Measurement ~ (DateTime * 3600 * 365), data = df_slim)
 ```
 
 ### Periodicity in the data
