@@ -1,5 +1,5 @@
 ---
-title: "SLC Air Quality - 5 Years On"
+title: "SLC Air Quality - Five Years On"
 excerpt: "The five-year state of the air"
 date: '2018-01-02'
 draft: true
@@ -40,7 +40,7 @@ df
 print(df, n = 5)
 ```
 
-Around 60k rows for the 5 year period and lots of columns we don't need. Let's simplify this dataset and look at it.
+Around 60k observations for the five year period and lots of columns we don't need. Let's simplify this dataset and look at it.
 
 ```{r}
 # Convert date and time columns into one column
@@ -60,23 +60,20 @@ df_slim <- df %>%
 
 print(df_slim, n = 5)
 ```
-Combine measurements from multiple sensors (after 2016) such that there's just one per-hour.
+Combine measurements from multiple sensors, such that there's just one per-hour.
 
 ```{r}
+df_slim <- df_slim %>% 
+  group_by(DateTime) %>% 
+  summarise(Measurement = mean(Measurement))
+dim(df_slim)
 
 ```
-
-
-```{r}
-# df_slim %>% 
-#   mutate(month = format(DateTime, "%m"), year = format(DateTime, "%Y")) %>%
-#   group_by(month, year) %>%
-#   summarise(total = sum(Measurement))
-```
+That takes us down to ~42k rows over five years.
 
 ### Time series for 2013-2017
 
-Now let's take a look at the 5 year time series. We'll use a log y-scale, such that the high-pollution outlier days don't dominate the visualization.
+Now let's take a look at the five year time series. We'll use a log y-scale, such that the high-pollution outlier days don't dominate the visualization.
 
 ```{r, echo=TRUE}
 library(ggplot2)
