@@ -1,5 +1,5 @@
 ---
-title: "SLC Air Quality"
+title: "SLC Air Quality - 5 Years On"
 excerpt: "The five-year state of the air"
 date: '2018-01-02'
 draft: true
@@ -28,45 +28,81 @@ We'll pull 2017 hourly data from [here](https://aqs.epa.gov/api) (you'll have to
 
 ## Analysis
 
+We'll be working via the [tidyverse](https://www.tidyverse.org/), which means we're using R and playing with [tibbles](https://cran.r-project.org/web/packages/tibble/vignettes/tibble.html).
+
 ### Load in the data
 
 ```{r}
 library(tidyverse)
 df <- read_csv('../data/SLCHawthornePM2-5_2013-2017.csv')
+df
+# Look at the data
+print(df, n = 5)
 ```
 
-Reduce tibble to only desired columns and code DateTime column
+Around 60k rows for the 5 year period and lots of columns we don't need. Let's simplify this dataset and look at it.
 
 ```{r}
-df$DateTime <- as.POSIXct(paste(df$Date.Local, df$X24.Hour.Local), 
+# Convert date and time columns into one column
+df$DateTime <- as.POSIXct(paste(df$`Date Local`, df$`24 Hour Local`), 
                           format="%Y-%m-%d %H:%M")
-#df_slim <- df %>% select(DateTime, Sample.Measurement)
-#df_slim
+
+# Rename column to avoid spaces
+df <- rename(df, Measurement = `Sample Measurement`)
+
+# Grab only relevant columns
+df_slim <- df %>%
+  select(DateTime, Measurement)
+
+print(df_slim, n = 5)
 ```
 
 ### Time series for 2013-2017
+
+Now let's take a look at the 5 year time series. We'll use a log y-scale, such that the high-pollution outlier days don't dominate the visualization.
+
 ```{r, echo=TRUE}
 library(ggplot2)
 library(scales)
-ggplot(data=df_slim, aes(x = DateTime, y = Sample.Measurement)) +
+ggplot(data = df_slim, aes(x = DateTime, y = Measurement)) +
   geom_point() +
-  geom_smooth(method = 'lm') +
+  #stat_smooth(method = 'lm') +
   labs(title = "PM2.5 in SLC from 2013 - 2017", x = "Year") +
   scale_y_log10(limits = c(1,NA), breaks = c(1,20,40,60,80,100)) +
   scale_x_datetime( labels=date_format("%m-%Y"), breaks = date_breaks("1 year"))
 ```
 
-### Trend line
+Now it _seems_ that the winter peaks are becoming less peak-y, but how do we nail down the trend with rigor?
 
-The trend looks like it's negative, right? That's engouraging! Anecdotally in SLC, each winter seems as bad as the last (perhaps because the issue is receving more attention each year).
+### Finding the seasonality
 
-What exactly is the trend?
+To find the seasonality in data, the fast fourier transform[https://en.wikipedia.org/wiki/Fast_Fourier_transform] is a fantastic tool. It essential turns a time domain into a frequency domain.
+
+Firs, we'll collapse the data into one data point per-hour
+
 ```{r}
-eq = lm(Sample.Measurement ~ as.Date(DateTime), data = df_slim)
-print(eq$coefficients)
+# Do we need to collapse rows into one meas per hour?
 ```
 
-When converting to a yearly rate of change (i.e., by multiplying the coefficient by 365) we see roughly a `print(eq$coefficients[2])` µg/m3 decrease per year in PM2.5.
+
+```{r}
+# Order sample vector by date
+Measurement_vect <- df_slim %>% 
+  na.omit() %>%
+  arrange(DateTime) %>% 
+  pull(Measurement)
+
+fft_res <- fft(Measurement_vect)
+dim(fft_res)
+```
+
+We not plot the result of the FFT to see what periodicity is in the data.
+
+```{r}
+ggplot(aes(fft_res))
+```
+
+
 
 
 ### Periodicity in the data
