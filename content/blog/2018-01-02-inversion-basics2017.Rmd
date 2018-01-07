@@ -47,14 +47,31 @@ Around 60k rows for the 5 year period and lots of columns we don't need. Let's s
 df$DateTime <- as.POSIXct(paste(df$`Date Local`, df$`24 Hour Local`), 
                           format="%Y-%m-%d %H:%M")
 
+df
+
 # Rename column to avoid spaces
 df <- rename(df, Measurement = `Sample Measurement`)
+df
 
-# Grab only relevant columns
+# Grab only 1-hr readings, avoid a new instrument that was introduced in 2016, and grab only needed columns
 df_slim <- df %>%
+  filter(`Sample Duration` == '1 HOUR') %>% 
   select(DateTime, Measurement)
 
 print(df_slim, n = 5)
+```
+Combine measurements from multiple sensors (after 2016) such that there's just one per-hour.
+
+```{r}
+
+```
+
+
+```{r}
+# df_slim %>% 
+#   mutate(month = format(DateTime, "%m"), year = format(DateTime, "%Y")) %>%
+#   group_by(month, year) %>%
+#   summarise(total = sum(Measurement))
 ```
 
 ### Time series for 2013-2017
