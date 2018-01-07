@@ -35,7 +35,7 @@ We'll be working via the [tidyverse](https://www.tidyverse.org/), which means we
 ```{r}
 library(tidyverse)
 df <- read_csv('../data/SLCHawthornePM2-5_2013-2017.csv')
-df
+
 # Look at the data
 print(df, n = 5)
 ```
@@ -47,13 +47,10 @@ Around 60k observations for the five year period and lots of columns we don't ne
 df$DateTime <- as.POSIXct(paste(df$`Date Local`, df$`24 Hour Local`), 
                           format="%Y-%m-%d %H:%M")
 
-df
-
 # Rename column to avoid spaces
 df <- rename(df, Measurement = `Sample Measurement`)
-df
 
-# Grab only 1-hr readings, avoid a new instrument that was introduced in 2016, and grab only needed columns
+# Grab only 1-hr readings and grab only needed columns
 df_slim <- df %>%
   filter(`Sample Duration` == '1 HOUR') %>% 
   select(DateTime, Measurement)
@@ -66,8 +63,6 @@ Combine measurements from multiple sensors, such that there's just one per-hour.
 df_slim <- df_slim %>% 
   group_by(DateTime) %>% 
   summarise(Measurement = mean(Measurement))
-dim(df_slim)
-
 ```
 That takes us down to ~42k rows over five years.
 
@@ -88,38 +83,57 @@ ggplot(data = df_slim, aes(x = DateTime, y = Measurement)) +
 
 Now it _seems_ that the winter peaks are becoming less peak-y, but how do we nail down the trend with rigor?
 
-### Finding the seasonality
+### Periodicity in the data
 
-To find the seasonality in data, the fast fourier transform[https://en.wikipedia.org/wiki/Fast_Fourier_transform] is a fantastic tool. It essential turns a time domain into a frequency domain.
+To find the seasonality in data, the fast fourier transform[https://en.wikipedia.org/wiki/Fast_Fourier_transform] is a fantastic tool. It essential turns a time domain into a frequency domain and helps you understand the reoccuring patterns in the data.
 
-Firs, we'll collapse the data into one data point per-hour
-
-```{r}
-# Do we need to collapse rows into one meas per hour?
-```
-
+First, we remove any nulls and pull the measurement vector from the tibble
 
 ```{r}
 # Order sample vector by date
-Measurement_vect <- df_slim %>% 
+measurement_vect <- df_slim %>% 
   na.omit() %>%
   arrange(DateTime) %>% 
   pull(Measurement)
-
-fft_res <- fft(Measurement_vect)
-dim(fft_res)
 ```
 
-We not plot the result of the FFT to see what periodicity is in the data.
+Now we compute the spectral density and switch from frequency to periods (borrowing from [here](https://rstudio-pubs-static.s3.amazonaws.com/9428_1197bd003ebd43c49b429f22ea4f36e5.html))
 
 ```{r}
-ggplot(aes(fft_res))
+spectral_data <- stats::spec.pgram(measurement_vect, plot = FALSE)
+
+# Grab what we need from the raw output
+spec.df <- as.tibble(list(freq = spectral_data$freq, spec = spectral_data$spec))
+
+# Create a vector of periods to label on the graph, units are in days
+days.period <- rev(c(1/4, 1/2, 1, 7, 30, 90, 180, 365))
+days.labels <- rev(c("1/4", "1/2", "1", "7", "30", "90", "180", "365"))
+days.freqs <- 1/days.period * 1/24  # Convert daily period to daily freq, and then to hourly freq
+
 ```
 
+Let's plot the raw periodogram, which shows the periodicity (or reoccuring patterns).
 
+```{r}
+ggplot(data = spec.df, aes(x = freq, y = spec)) + 
+  geom_line() + 
+  scale_x_continuous("Period (days)", breaks = days.freqs, labels = days.labels) + 
+  scale_y_continuous()
+```
 
+While it's a bit messy, we see diurnal (i.e., daily) and half-day patterns emerging. This would align with intuition, as factories, furnaces, and vehicle traffic would certainly ramp up at roughly on a daily cycle. The half-day 
 
-### Periodicity in the data
+Now let's use log-10 axis to see if the patterns change much
+```{r}
+ggplot(data = spec.df, aes(x = freq, y = spec)) + 
+  geom_line() + 
+  scale_x_log10("Period (days)", breaks = days.freqs, labels = days.labels) + 
+  scale_y_log10()
+```
+While it's certainly a bit messy, we see that there are 
+
+### Breaking out the trend and the seasonality
+
 
 
 ## Conclusions and next steps
