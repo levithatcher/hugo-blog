@@ -51,16 +51,17 @@ df$DateTime <- as.POSIXct(paste(df$`Date Local`, df$`24 Hour Local`),
 df <- rename(df, Measurement = `Sample Measurement`)
 
 # Grab only 1-hr readings, remove readings of PM2.5 below 0, and grab only needed columns
-df_slim <- df %>%
+df_slim_hourly <- df %>%
   filter(`Sample Duration` == '1 HOUR' & Measurement >= 0) %>% 
   select(DateTime, Measurement)
 
-print(df_slim, n = 5)
+print(df_slim_hourly, n = 5)
 ```
 Combine measurements from multiple sensors, such that there's just one per-hour.
 
 ```{r}
-df_slim <- df_slim %>% 
+df_slim_hourly <- df_slim_hourly %>% 
+  na.omit(Measurement) %>% 
   group_by(DateTime) %>% 
   summarise(Measurement = mean(Measurement))
 ```
@@ -73,7 +74,7 @@ Now let's take a look at the five year time series. We'll use a log y-scale, suc
 ```{r, echo=TRUE}
 library(ggplot2)
 library(scales)
-ggplot(data = df_slim, aes(x = DateTime, y = Measurement)) +
+ggplot(data = df_slim_hourly, aes(x = DateTime, y = Measurement)) +
   geom_point() +
   labs(title = "PM2.5 in SLC from 2013 - 2017") +
   scale_y_log10(name = "PM2.5 µg/m3", limits = c(1,NA), breaks = c(1,20,40,60,80,100)) +
@@ -90,8 +91,7 @@ First, we remove any nulls and pull the measurement vector from the tibble
 
 ```{r}
 # Order sample vector by date
-measurement_vect <- df_slim %>% 
-  na.omit() %>%
+measurement_vect_hourly <- df_slim_hourly %>% 
   arrange(DateTime) %>% 
   pull(Measurement)
 ```
@@ -99,7 +99,7 @@ measurement_vect <- df_slim %>%
 Now we compute the spectral density and switch from frequency to periods (borrowing from [here](https://rstudio-pubs-static.s3.amazonaws.com/9428_1197bd003ebd43c49b429f22ea4f36e5.html))
 
 ```{r}
-spectral_data <- stats::spec.pgram(measurement_vect, plot = FALSE)
+spectral_data <- stats::spec.pgram(measurement_vect_hourly, plot = FALSE)
 
 # Grab what we need from the raw output
 spec.df <- as.tibble(list(freq = spectral_data$freq, spec = spectral_data$spec))
@@ -140,31 +140,59 @@ This is your classic spectral density plot. While it's certainly a bit messy, th
 This seasonality makes trend analysis a bit more involved, as one has to first remove the seasonal effect. Fortunately, this is still straightforward in R. While there are [many ways to do this](https://cran.r-project.org/web/views/TimeSeries.html), we'll keep it simple and use the stats package's `stl` function. See more via `?stl`.
 
 ```{r}
-library(ggseas)
-ggplot(data = df_slim, aes(x = DateTime, y = Measurement)) +
-  geom_point() +
-  stat_seas(color = "red", size = 3) +
-  #labs(title = "PM2.5 in SLC from 2013 - 2017") +
-  scale_y_log10(name = "PM2.5 µg/m3", limits = c(1,NA), breaks = c(1,20,40,60,80,100))
-  #scale_x_datetime(name = "Year", labels=date_format("%m-%Y"), breaks = date_breaks("1 year"))
+# library(ggseas)
+# new <- ts(df_slim_hourly$Measurement, start=c(2013,1), frequency = 8760)
+# df_new <- tsdf(new)
+# 
+# ggplot(data = df_new, aes(x = x, y = y)) +
+#   geom_point() +
+#   stat_seas(color = "red", size = 3) +
+#   #stat_stl(s.window = 8760, colour = "red", size = 3) +
+#   #labs(title = "PM2.5 in SLC from 2013 - 2017") +
+#   scale_y_log10(name = "PM2.5 µg/m3", limits = c(1,NA), breaks = c(1,20,40,60,80,100))
+#   #scale_x_datetime(name = "Year", labels=date_format("%m-%Y"), breaks = date_breaks("1 year"))
 
-# ggsdc(data = df_slim, aes(x = DateTime, y = Measurement), method = "seas") + 
+# ggsdc(data = df_slim_hourly, aes(x = DateTime, y = Measurement), method = "seas") + 
 #   geom_line()
 ```
 
+Let's go back and grab the daily data (instead of hourly)
 
+```{r}
+# Grab only daily readings, remove readings of PM2.5 below 0, and grab only needed columns
+df_slim_daily <- df %>%
+  filter(`Sample Duration` == '24 HOUR' & Measurement >= 0) %>% 
+  select(DateTime, Measurement)
+
+df_slim_daily$DateTime <- as.Date(df_slim_daily$DateTime)
+
+measurement_vect_daily <- df_slim_daily %>% 
+  arrange(DateTime) %>% 
+  pull(Measurement)
+
+
+```
 
 
 ```{r}
 # Convert measurement vector to time series object
-
-#Pull in 12/17 data!
-#measurement_ts <- ts(measurement_vect, start=c(2013,1), frequency = 8760)
+measurement_ts <- ts(measurement_vect_daily, start=c(2013,1), frequency = 365)
 
 # Perform decomposition into parts via additive component
-#decomposed_slim <- stats::stl(x = measurement_ts, s.window = "periodic")
-#plot(decomposed_slim)
-# Plot
+stl_slim <- stats::stl(x = measurement_ts, s.window = "periodic")
+
+
+# Prep trend data so we can plot with raw data from above
+# What's the standard way to do use ts objects in ggplot2?
+library(ggseas)
+df_trend <- tsdf(stl_slim$time.series[,'trend'])
+df_trend$DateTime <- df_slim_daily$DateTime
+
+ggplot(data = df_trend, aes(x = DateTime, y = y)) +
+  geom_line() +
+  labs(title = "PM2.5 in SLC from 2013 - 2017")
+  #scale_y_log10(name = "PM2.5 µg/m3", limits = c(1,NA), breaks = c(1,20,40,60,80,100)) +
+  #scale_x_datetime(name = "Year", labels=date_format("%m-%Y"), breaks = date_breaks("1 year"))
 
 ```
 
