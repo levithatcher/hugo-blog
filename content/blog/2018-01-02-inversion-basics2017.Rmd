@@ -162,7 +162,7 @@ Let's go back and grab the daily data (instead of hourly)
 # Grab only daily readings, remove readings of PM2.5 below 0, and grab only needed columns
 df_slim_daily <- df %>%
   filter(`Sample Duration` == '24 HOUR' & Measurement >= 0) %>%
-  arrange(DateTime) 
+  arrange(DateTime) %>%
   select(DateTime, Measurement)
 
 df_slim_daily$DateTime <- as.Date(df_slim_daily$DateTime)
@@ -193,21 +193,23 @@ ggplot(data = df_slim_daily, aes(x = DateTime, y = Measurement)) +
 measurement_ts <- ts(measurement_vect_daily, start=c(2013,1,1), frequency = 365.25)
 
 # Perform decomposition into parts via additive component
-stl_slim <- stats::stl(x = measurement_ts, s.window = "periodic")
-
+#stl_slim <- stats::stl(x = measurement_ts, s.window = "periodic")
 
 # Prep trend data so we can plot with raw data from above
 # What's the standard way to do use ts objects in ggplot2?
 library(ggseas)
-df_trend <- tsdf(stl_slim$time.series[,'trend'])
-df_trend$DateTime <- df_slim_daily$DateTime
+df_trend <- tsdf(measurement_ts)
+#df_slim_daily$Trend <- stl_slim$time.series[,'trend']
 
-ggplot(df_trend, aes(x = DateTime, y = y)) +
-   geom_line(colour = "red", size = 3) +
-   stat_seas() 
-   # geom_line(data = df_slim_daily, colour = "black", aes(x = DateTime, y = Measurement)) +
+# Loess smooth
+smooth <- 
+df_trend$smooth <- loess(y ~ x, data = df_trend)$fitted
+
+ggplot(df_trend, aes(x = x)) +
+  geom_line(aes(y = y, size = 1)) + 
+  geom_line(aes(y = smooth, colour = "red", size = 3)) +
    # labs(title = "PM2.5 in SLC from 2013 - 2017") +
-   # scale_y_log10(name = "PM2.5 µg/m3", limits = c(1,NA), breaks = c(1,20,40,60,80,100))
+   scale_y_log10(name = "PM2.5 µg/m3", limits = c(1,NA), breaks = c(1,20,40,60,80,100))
    #scale_x_continuous(name = "Year", labels=date_format("%m-%Y"), breaks = date_breaks("1 year"))
 
 # ggplot(data = df_trend, aes(x = DateTime, y = y)) +
