@@ -50,14 +50,14 @@ df$DateTime <- as.POSIXct(paste(df$`Date Local`, df$`24 Hour Local`),
 # Rename column to avoid spaces
 df <- rename(df, Measurement = `Sample Measurement`)
 
-# Grab only 1-hr readings, remove readings of PM2.5 below 0, and grab only needed columns
+# Grab only 1-hr readings, remove readings of PM2.5 below 0
 df_slim_hourly <- df %>%
   filter(`Sample Duration` == '1 HOUR' & Measurement >= 0) %>% 
-  select(DateTime, Measurement)
+  select(DateTime, Measurement) # Grab only necessary columnns
 
 print(df_slim_hourly, n = 5)
 ```
-Combine measurements from multiple sensors, such that there's just one per-hour.
+Combine measurements from multiple intra-hour readings at the Hawthorne site, such that there's just one per-hour.
 
 ```{r}
 df_slim_hourly <- df_slim_hourly %>% 
@@ -77,21 +77,26 @@ library(scales)
 ggplot(data = df_slim_hourly, aes(x = DateTime, y = Measurement)) +
   geom_point() +
   labs(title = "Hourly PM2.5 in SLC from 2013 - 2017") +
-  scale_y_log10(name = "PM2.5 µg/m3", limits = c(1,NA), breaks = c(1,20,40,60,80,100)) +
-  scale_x_datetime(name = "Year", labels=date_format("%m-%Y"), breaks = date_breaks("1 year"))
+  scale_y_log10(name = "PM2.5 µg/m3", 
+                limits = c(1,NA), 
+                breaks = c(1,20,40,60,80,100)) +
+  scale_x_datetime(name = "Year", 
+                   labels=date_format("%m-%Y"), 
+                   breaks = date_breaks("1 year"))
 ```
 
-Now it _seems_ that the winter peaks are becoming less peak-y, but how do we nail down the trend with rigor?
+This is daily date, so it's messy, but it _seems_ that the winter peaks are becoming less peak-y. Hmm. Let's try to nail down the trend with a little more rigor.
 
 ### Periodicity in the data
 
-To find the seasonality in data, the fast fourier transform[https://en.wikipedia.org/wiki/Fast_Fourier_transform] is a fantastic tool. It essential turns a time domain into a frequency domain and helps you understand the reoccuring patterns in the data.
+To understand the trend, we first have to grapple with seasonality. To find seasonality (or cyclic patterns in general), the [fast fourier transform](https://en.wikipedia.org/wiki/Fast_Fourier_transform) is a fantastic tool that essentially turns a time domain into a frequency domain. There are several ways to do it--we'll keep it simple via the r stats package.
 
-First, we remove any nulls and pull the measurement vector from the tibble
+First, we remove any nulls and pull the measurement vector from the tibble. Note that because Nov 2013 is missing hourly data, _we'll use data from 2014-2017 for this section_.
 
 ```{r}
 # Order sample vector by date
 measurement_vect_hourly <- df_slim_hourly %>% 
+  filter(DateTime > '2013-12-31') %>% 
   arrange(DateTime) %>% 
   pull(Measurement)
 ```
@@ -102,12 +107,14 @@ Now we compute the spectral density and switch from frequency to periods (borrow
 spectral_data <- stats::spec.pgram(measurement_vect_hourly, plot = FALSE)
 
 # Grab what we need from the raw output
-spec.df <- as.tibble(list(freq = spectral_data$freq, spec = spectral_data$spec))
+spec.df <- as.tibble(list(freq = spectral_data$freq, 
+                          spec = spectral_data$spec))
 
 # Create a vector of periods to label on the graph, units are in days
 days.period <- rev(c(1/4, 1/2, 1, 7, 30, 90, 180, 365))
 days.labels <- rev(c("1/4", "1/2", "1", "7", "30", "90", "180", "365"))
-days.freqs <- 1/days.period * 1/24  # Convert daily period to daily freq, and then to hourly freq
+# Convert daily period to daily freq, and then to hourly freq
+days.freqs <- 1/days.period * 1/24
 
 ```
 
@@ -116,50 +123,54 @@ Let's plot the raw periodogram (or power spectral density), which shows the freq
 ```{r}
 ggplot(data = spec.df, aes(x = freq, y = spec)) + 
   geom_line() + 
-  labs(title = "PM2.5 Power Spectral Density 2013-2017") +
-  scale_x_continuous(name = "Period (days)", breaks = days.freqs, labels = days.labels, limits = c(NA, 0.1)) + 
+  labs(title = "PM2.5 Power Spectral Density 2014-2017") +
+  scale_x_continuous(name = "Period (days)", 
+                     breaks = days.freqs, 
+                     labels = days.labels) +
   scale_y_continuous(name = "Power spectral density")
 ```
 
-While it's a bit messy, we see diurnal (i.e., daily) and minimal half-day patterns emerging. This would align with intuition, as factories, furnaces, and vehicle traffic would certainly ramp up roughly on a daily cycle. 
+First, note tha the X-axis starts at 365 days. While it's a bit messy, we see diurnal (i.e., daily) and minimal half-day patterns emerging. This would align with intuition, as factories, furnaces, and vehicle traffic would certainly ramp up roughly on a daily cycle. 
 
 The half-day emissions cycle also makes some sense, as there are roughly two intuitive times each day when PM2.5 would spike--when factories/furnances ramp up along with the morning commute, and a discrete spike matching the evening commute.
 
-Now let's use log-10 axes to see if the patterns change much
+Note the ~yearly pattern is pronounced, and not just occurring on a strict 365-day cycle, which makes sense. Now let's use log-10 axes to see if the plot is easier to read.
 ```{r}
 ggplot(data = spec.df, aes(x = freq, y = spec)) + 
   geom_line() +
-  labs(title = "PM2.5 Power Spectral Density log10-log10 2013-2017") +
+  labs(title = "PM2.5 Power Spectral Density log10-log10 2014-2017") +
   scale_x_log10("Period (days)", breaks = days.freqs, labels = days.labels) + 
   scale_y_log10("Power spectral density")
 ```
-This is your classic spectral density plot. While it's certainly a bit messy, the half and full day cycle are corroborated here, while the one-year cycle is harder to pick out. There is some sense to this, as the winter inversions certainly aren't consistent in their arrival or duration.
+This is your classic spectral density plot. While it's certainly a bit messy, the half and full day cycle are still pronounced, while the one-year cycle is harder to pick out. There is some sense to this, as the winter inversions certainly aren't consistent in their arrival or duration.
 
 ### Breaking out the trend and the seasonality
 
-This seasonality makes trend analysis a bit more involved, as one has to first remove the seasonal effect. Fortunately, this is still straightforward in R. While there are [many ways to do this](https://cran.r-project.org/web/views/TimeSeries.html), we'll keep it simple and use the stats package's `stl` function. See more via `?stl`.
+Now let's think about removing the seasonality from the data, such that we can get at the trend. Fortunately, this is still straightforward in R.
 
-Let's go back and grab the daily data (instead of hourly)
+To simplify the analysis, let's go back and grab the daily data (instead of hourly) _from 2013-2017_
 
 ```{r}
-# Grab only daily readings, remove readings of PM2.5 below 0, and grab only needed columns
 df_slim_daily <- df %>%
   filter(`Sample Duration` == '24 HOUR' & Measurement >= 0) %>%
-  arrange(DateTime) %>%
-  select(DateTime, Measurement)
+  mutate(DateTime = as.Date(DateTime)) %>% # Switch to Date
+  rename(Date = DateTime) %>%              # Remove time column
+  arrange(Date) %>%
+  select(Date, Measurement)                # Grab necessary columns
 
-df_slim_daily$DateTime <- as.Date(df_slim_daily$DateTime)
-
+# Prepare vector for seasonal decomposition
 measurement_vect_daily <- df_slim_daily %>% 
-  arrange(DateTime) %>%
+  arrange(Date) %>%
   pull(Measurement)
 ```
 
-While I tried other options* I ultimately broke out the trend from the seasonality via `stl` and `ggplot2`.
+While there are [many ways to do this](https://cran.r-project.org/web/views/TimeSeries.html), we'll keep it simple and use the stats package's `stl` function to separate the seasonal component from the secular trend. See more via `?stl`.
 
 ```{r}
 # Convert measurement vector to time series object
-measurement_ts <- ts(measurement_vect_daily, start=c(2013,1,1), frequency = 365.25)
+measurement_ts <- ts(measurement_vect_daily, 
+                     start=c(2013,1,1), 
+                     frequency = 365.25)
 
 # Perform decomposition into trend, seasonal, etc
 stl_slim <- stats::stl(x = measurement_ts, s.window = "periodic")
@@ -167,17 +178,43 @@ stl_slim <- stats::stl(x = measurement_ts, s.window = "periodic")
 # Put trend back into daily tibble
 df_slim_daily$Trend <- stl_slim$time.series[,'trend']
 
-# Plot trend over daily data
-ggplot(df_slim_daily, aes(x = DateTime)) +
-  geom_line(aes(y = Trend, color = "red", size = 1)) +
-  geom_line(aes(y = Measurement)) +
-  labs(title = "Daily PM2.5 in SLC from 2013 - 2017") +
-  scale_y_log10(name = "PM2.5 µg/m3", limits = c(1,NA), breaks = c(1,20,40,60,80,100)) +
-  scale_x_date(name = "Year", labels=date_format("%m-%Y"), breaks = date_breaks("1 year"))
+# Show data
+head(df_slim_daily, 4)
 ```
 
+You see that, besides the `Date` column we have the raw daily `Measurements` as well as the secular `Trend` column. Let's overlay these two to see what pollution progress (if any) SLC has made over the last five years.
 
-## Conclusions and next steps
+Note that there is missing daily readings from the winter of 2014-2015, so don't focus on that dip.
 
+```{r}
+# Plot trend over daily data
+ggplot(df_slim_daily, aes(x = Date)) +
+  geom_line(aes(y = Trend, colour = "Trend"), size = 3) +
+  geom_line(aes(y = Measurement, colour = "Daily Data")) +
+  labs(title = "PM2.5 Daily Measurements and Trend in SLC from 2013 - 2017") +
+  scale_colour_manual(values = c("black", "red")) +
+  scale_y_log10(name = "PM2.5 µg/m3", 
+                limits = c(1,NA), 
+                breaks = c(1,20,40,60,80,100)) +
+  scale_x_date(name = "Year", 
+               labels=date_format("%m-%Y"), 
+               breaks = date_breaks("1 year"))
+```
 
+## Conclusions
 
+Hooray, tentative progress! Note that the de-seasonalized daily 2017 PM2.5 values were generally below those of 2013-2014. The improvement appears to be coming from reducing the winter spikes, which is great. While the trend isn't dramatic and I'd love to corroborate with data from other sites, we do at least appear in a better spot than five years ago.
+
+**However**, we still have issues in SLC
+
+- The downward trend has stalled in 2016-2017; what new policies had started in 2013?
+- Our "best" PM2.5 site has recent missing data for both 1-hr and 24-hr readings--why?
+- Salt Lake County is still [classified](https://www3.epa.gov/airquality/urbanair/sipstatus/reports/ut_areabypoll.html) as a _Serious_ non-attainment area by the EPA.
+
+Non-attainment status comes when areas "[persistently exceed](https://deq.utah.gov/Pollutants/P/pm/pm25/areas.htm) the National Ambient Air Quality Standards." Apparently the county moved from _moderate_ to _serious_ non-attainment because it [didn't meet a 2015 EPA air quality complicance deadline](https://archive.sltrib.com/article.php?id=5240322&itype=CMSID).
+
+## Next steps
+
+Soon I'll try to nail down the trend with *complete* daily data from 2013-2017, provide easier year-over-year comparisons, and make this more robust via 2008-2017 trend and pull in data from multiple sites.
+
+Note that the 2018 session for the [Utah Legislature](https://le.utah.gov/Documents/find.htm) starts on January 22nd!
