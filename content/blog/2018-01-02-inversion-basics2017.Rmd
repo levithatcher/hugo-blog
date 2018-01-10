@@ -2,7 +2,7 @@
 title: "SLC Air Quality - Five Years On"
 excerpt: "Are we doing better or worse?"
 date: '2018-01-02'
-draft: true
+draft: false
 ---
 
 ```{r setup, include=FALSE}
@@ -14,7 +14,7 @@ knitr::opts_chunk$set(cache = TRUE, warning = FALSE, message = FALSE,
 
 ## Background on SLC Air
 
-For those unfamiliar, SLC is famous for its winter temperature inversions. These things are famous for trapping emissions and making life unpleasant. There's tons of great background [here](http://home.chpc.utah.edu/~whiteman/PM2.5/PM2.5.html) and [here](https://ehp.niehs.nih.gov/1104349/). The focus of _today's_ post will be digging into 2017 values of **PM2.5** in SLC, as this type of pollutant is most frequently linked to [negative health outcomes](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4740125/).
+For those unfamiliar, Salt Lake City is famous for its exquisite natural beauty, and for winter temperature inversions. These events trap emissions in the valley and make life unpleasant. For the uninitiated, see [here](http://home.chpc.utah.edu/~whiteman/PM2.5/PM2.5.html) and [here](https://ehp.niehs.nih.gov/1104349/). The focus of _today's_ post will be digging into five years of **PM2.5** data in SLC, as this type of inversion-exacerbated pollutant is most frequently linked to [negative health outcomes](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4740125/). Check out one episode from 2016 (image from [here](http://health.utah.gov/utahair/SLC_51ug-m3.jpg)):
 
 ![](http://health.utah.gov/utahair/SLC_51ug-m3.jpg)
 
@@ -28,7 +28,7 @@ We'll pull 2017 hourly data from [here](https://aqs.epa.gov/api) (you'll have to
 
 ## Analysis
 
-We'll be working via the [tidyverse](https://www.tidyverse.org/), which means we're using R and playing with [tibbles](https://cran.r-project.org/web/packages/tibble/vignettes/tibble.html).
+We'll be working with R and the [tidyverse](https://www.tidyverse.org/).
 
 ### Load in the data
 
@@ -40,7 +40,7 @@ df <- read_csv('../data/SLCHawthornePM2-5_2013-2017.csv')
 print(df, n = 5)
 ```
 
-Around 60k observations for the five year period and lots of columns we don't need. Let's simplify this dataset and look at it.
+Around 60k observations for the five year period and lots of columns we don't need. Let's simplify this dataset and look again.
 
 ```{r}
 # Convert date and time columns into one column
@@ -52,12 +52,13 @@ df <- rename(df, Measurement = `Sample Measurement`)
 
 # Grab only 1-hr readings, remove readings of PM2.5 below 0
 df_slim_hourly <- df %>%
-  filter(`Sample Duration` == '1 HOUR' & Measurement >= 0) %>% 
+  filter(`Sample Duration` == '1 HOUR' & Measurement >= 0) %>%
+  arrange(DateTime) %>%
   select(DateTime, Measurement) # Grab only necessary columnns
 
 print(df_slim_hourly, n = 5)
 ```
-Combine measurements from multiple intra-hour readings at the Hawthorne site, such that there's just one per-hour.
+Fairly simple time series setup here--nice. But more cleaning is necessary. To further simplify the analyis, let's combine measurements from multiple intra-hour readings at the Hawthorne site, such that there's just one per-hour.
 
 ```{r}
 df_slim_hourly <- df_slim_hourly %>% 
@@ -85,7 +86,7 @@ ggplot(data = df_slim_hourly, aes(x = DateTime, y = Measurement)) +
                    breaks = date_breaks("1 year"))
 ```
 
-This is daily date, so it's messy, but it _seems_ that the winter peaks are becoming less peak-y. Hmm. Let's try to nail down the trend with a little more rigor.
+This is daily data, so it's messy, but it _seems_ that the winter peaks are becoming less peak-y. Hmm. Let's try to nail down the trend with a little more rigor.
 
 ### Periodicity in the data
 
@@ -118,7 +119,7 @@ days.freqs <- 1/days.period * 1/24
 
 ```
 
-Let's plot the raw periodogram (or power spectral density), which shows the frequency of reoccuring patterns. Quick, before looking, think of what cycles you'd expect to see!
+Let's plot the spectral density via a smoothed periodogram, which shows the frequency of reoccuring patterns. Quick, before looking, think of what cycles you'd expect to see!
 
 ```{r}
 ggplot(data = spec.df, aes(x = freq, y = spec)) + 
@@ -130,7 +131,7 @@ ggplot(data = spec.df, aes(x = freq, y = spec)) +
   scale_y_continuous(name = "Power spectral density")
 ```
 
-First, note tha the X-axis starts at 365 days. While it's a bit messy, we see diurnal (i.e., daily) and minimal half-day patterns emerging. This would align with intuition, as factories, furnaces, and vehicle traffic would certainly ramp up roughly on a daily cycle. 
+First, note that the X-axis starts at 365 days. While it's a bit messy, we see diurnal (i.e., daily) and minimal half-day patterns emerging. This would align with intuition, as factories, furnaces, and vehicle traffic would certainly ramp up roughly on a daily cycle. 
 
 The half-day emissions cycle also makes some sense, as there are roughly two intuitive times each day when PM2.5 would spike--when factories/furnances ramp up along with the morning commute, and a discrete spike matching the evening commute.
 
@@ -142,11 +143,11 @@ ggplot(data = spec.df, aes(x = freq, y = spec)) +
   scale_x_log10("Period (days)", breaks = days.freqs, labels = days.labels) + 
   scale_y_log10("Power spectral density")
 ```
-This is your classic spectral density plot. While it's certainly a bit messy, the half and full day cycle are still pronounced, while the one-year cycle is harder to pick out. There is some sense to this, as the winter inversions certainly aren't consistent in their arrival or duration.
+While it's certainly a bit messy, the half and full day cycle are still pronounced, while the one-year cycle is harder to pick out. There is some sense to this, as the winter inversions certainly aren't consistent in their arrival or duration.
 
 ### Breaking out the trend and the seasonality
 
-Now let's think about removing the seasonality from the data, such that we can get at the trend. Fortunately, this is still straightforward in R.
+Now let's think about _removing_ the seasonality from the data, such that we can get at the trend. Fortunately, this is still straightforward in R.
 
 To simplify the analysis, let's go back and grab the daily data (instead of hourly) _from 2013-2017_
 
@@ -203,18 +204,18 @@ ggplot(df_slim_daily, aes(x = Date)) +
 
 ## Conclusions
 
-Hooray, tentative progress! Note that the de-seasonalized daily 2017 PM2.5 values were generally below those of 2013-2014. The improvement appears to be coming from reducing the winter spikes, which is great. While the trend isn't dramatic and I'd love to corroborate with data from other sites, we do at least appear in a better spot than five years ago.
+Hooray, perhaps tentative progress! Note that the de-seasonalized daily 2017 PM2.5 values were generally below those of 2013-2014. The improvement appears to be coming from reducing the winter spikes, which is great. While the trend isn't dramatic and I'd love to corroborate with data from other sites, we do at least appear in a better spot than five years ago.
 
 **However**, we still have issues in SLC
 
 - The downward trend has stalled in 2016-2017; what new policies had started in 2013?
-- Our "best" PM2.5 site has recent missing data for both 1-hr and 24-hr readings--why?
+- Our ["best"](http://home.chpc.utah.edu/~whiteman/PM2.5/PM2.5.html#current_conc) PM2.5 site has recent missing data for both 1-hr and 24-hr readings--why?
 - Salt Lake County is still [classified](https://www3.epa.gov/airquality/urbanair/sipstatus/reports/ut_areabypoll.html) as a _Serious_ non-attainment area by the EPA.
 
-Non-attainment status comes when areas "[persistently exceed](https://deq.utah.gov/Pollutants/P/pm/pm25/areas.htm) the National Ambient Air Quality Standards." Apparently the county moved from _moderate_ to _serious_ non-attainment because it [didn't meet a 2015 EPA air quality complicance deadline](https://archive.sltrib.com/article.php?id=5240322&itype=CMSID).
+Non-attainment status comes when areas "[persistently exceed](https://deq.utah.gov/Pollutants/P/pm/pm25/areas.htm) the National Ambient Air Quality Standards." Apparently the county moved from _moderate_ to _serious_ non-attainment because it [didn't meet a 2015 EPA air quality complicance deadline](https://archive.sltrib.com/article.php?id=5240322&itype=CMSID). It's still unhealthy for folks to spend time outside on certain winter days, and that's not acceptable.
 
 ## Next steps
 
-Soon I'll try to nail down the trend with *complete* daily data from 2013-2017, provide easier year-over-year comparisons, and make this more robust via 2008-2017 trend and pull in data from multiple sites.
+Soon I'll try to nail down the trend with *complete* daily data from 2013-2017, provide easier year-over-year comparisons, and make this more robust via a 2008-2017 trend and pull in data from multiple sites.
 
 Note that the 2018 session for the [Utah Legislature](https://le.utah.gov/Documents/find.htm) starts on January 22nd!
