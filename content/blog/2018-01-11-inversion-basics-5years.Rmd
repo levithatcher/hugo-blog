@@ -1,5 +1,5 @@
 ---
-title: "SLC Air Quality - Five Years On"
+title: "SLC air quality - five years on"
 excerpt: "Are we doing better or worse?"
 date: '2018-01-11'
 draft: false
