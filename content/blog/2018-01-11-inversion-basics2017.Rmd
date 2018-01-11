@@ -1,8 +1,9 @@
 ---
 title: "SLC Air Quality - Five Years On"
 excerpt: "Are we doing better or worse?"
-date: '2018-01-02'
+date: '2018-01-11'
 draft: false
+showpagemeta: true
 ---
 
 ```{r setup, include=FALSE}
@@ -14,9 +15,9 @@ knitr::opts_chunk$set(cache = TRUE, warning = FALSE, message = FALSE,
 
 ## Background on SLC Air
 
-For those unfamiliar, Salt Lake City is famous for its exquisite natural beauty, and for winter temperature inversions. These events trap emissions in the valley and make life unpleasant. For the uninitiated, see [here](http://home.chpc.utah.edu/~whiteman/PM2.5/PM2.5.html) and [here](https://ehp.niehs.nih.gov/1104349/). The focus of _today's_ post will be digging into five years of **PM2.5** data in SLC, as this type of inversion-exacerbated pollutant is most frequently linked to [negative health outcomes](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4740125/). Check out one episode from 2016 (image from [here](http://health.utah.gov/utahair/SLC_51ug-m3.jpg)):
+For those unfamiliar, Salt Lake City is famous for its exquisite natural beauty, and its winter temperature inversions. These events trap emissions in the valley and make life unpleasant. For the uninitiated, see [here](http://home.chpc.utah.edu/~whiteman/PM2.5/PM2.5.html) and [here](https://ehp.niehs.nih.gov/1104349/). The focus of _today's_ post will be digging into five years of **PM2.5** data in SLC, as this type of inversion-exacerbated pollutant is most frequently linked to [negative health outcomes](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4740125/). Check out this episode from 2016 (image from [here](http://health.utah.gov/utahair/SLC_51ug-m3.jpg)):
 
-![](http://health.utah.gov/utahair/SLC_51ug-m3.jpg)
+<img src="figs/2017-01-11-inversion-basics/SLC_51ug-m3.jpg" width="99%">
 
 ## Get the data
 
@@ -24,7 +25,7 @@ The data we'll be using for the analysis comes from the [UDAQ](https://deq.utah.
 
 We'll pull 2017 hourly data from [here](https://aqs.epa.gov/api) (you'll have to register) with these parameters:
 
-<img src="figs/2017-01-06-inversion-basics/data_download_parameters.png" width="800">
+<img src="figs/2017-01-11-inversion-basics/data_download_parameters.png" width="99%">
 
 ## Analysis
 
@@ -174,7 +175,9 @@ measurement_ts <- ts(measurement_vect_daily,
                      frequency = 365.25)
 
 # Perform decomposition into trend, seasonal, etc
-stl_slim <- stats::stl(x = measurement_ts, s.window = "periodic")
+# Higher values of s.window make seasonal component more static
+stl_slim <- stats::stl(x = measurement_ts, 
+                       s.window = 15)
 
 # Put trend back into daily tibble
 df_slim_daily$Trend <- stl_slim$time.series[,'trend']
@@ -216,6 +219,6 @@ Non-attainment status comes when areas "[persistently exceed](https://deq.utah.g
 
 ## Next steps
 
-Soon I'll try to nail down the trend with *complete* daily data from 2013-2017, provide easier year-over-year comparisons, and make this more robust via a 2008-2017 trend and pull in data from multiple sites.
+Soon I'll try to nail down the trend with *complete* daily data from 2013-2017, provide easier year-over-year comparisons, and make this more robust via a 2008-2017 trend with data from multiple sites.
 
 Note that the 2018 session for the [Utah Legislature](https://le.utah.gov/Documents/find.htm) starts on January 22nd!
