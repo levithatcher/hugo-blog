@@ -73,7 +73,7 @@ That takes us down to ~42k rows over five years.
 
 Now let's take a look at the five year time series. We'll use a log y-scale, such that the high-pollution outlier days don't dominate the visualization.
 
-```{r, echo=TRUE}
+```{r time series, echo=TRUE}
 library(ggplot2)
 library(scales)
 ggplot(data = df_slim_hourly, aes(x = DateTime, y = Measurement)) +
