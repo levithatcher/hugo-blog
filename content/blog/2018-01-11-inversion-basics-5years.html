@@ -169,8 +169,8 @@ head(df_slim_daily, 4)</code></pre>
 ## 2 2013-01-02        26.5  16.2
 ## 3 2013-01-03        37.1  16.2
 ## 4 2013-01-04        41.5  16.1</code></pre>
-<p>You see that, besides the <code>Date</code> column we have the raw daily <code>Measurements</code> as well as the secular <code>Trend</code> column. Let’s overlay these two to see what pollution progress (if any) SLC has made over the last five years.</p>
-<p>Note that there is missing daily readings from the winter of 2014-2015, so don’t focus on that dip.</p>
+<p>Besides the <code>Date</code> column we have the raw daily <code>Measurements</code> as well as the <a href="https://en.wikipedia.org/wiki/Secular_variation">secular</a> <code>Trend</code> column. Let’s overlay these two to see what pollution progress (if any) SLC has made over the last five years.</p>
+<p>Note that the EPA is missing some daily readings from the winter of 2014-2015, so don’t focus on that dip.</p>
 <pre class="r"><code># Plot trend over daily data
 ggplot(df_slim_daily, aes(x = Date)) +
   geom_line(aes(y = Trend, colour = &quot;Trend&quot;), size = 3) +
@@ -188,10 +188,10 @@ ggplot(df_slim_daily, aes(x = Date)) +
 </section>
 <section id="conclusions" class="level2">
 <h2>Conclusions</h2>
-<p>Hooray, perhaps tentative progress! Note that the de-seasonalized daily 2017 PM2.5 values were generally below those of 2013-2014. The improvement appears to be coming from reducing the winter spikes, which is great. While the trend isn’t dramatic and I’d love to corroborate with data from other sites, we do at least appear in a better spot than five years ago.</p>
+<p>Hooray, perhaps tentative progress! <strong>Note that the de-seasonalized daily 2017 PM2.5 values were generally below those of 2013-2014</strong>. The improvement appears to be coming from reduced winter spikes, which is great. While the trend isn’t dramatic and I’d love to corroborate with data from other sites, we do at least appear in a better spot than five years ago.</p>
 <p><strong>However</strong>, we still have issues in SLC</p>
 <ul>
-<li>The downward trend has stalled in 2016-2017; what new policies had started in 2013?</li>
+<li>The downward trend has stalled in 2016-2017; what new policies had started in 2013 that we can double-down on?</li>
 <li>Our <a href="http://home.chpc.utah.edu/~whiteman/PM2.5/PM2.5.html#current_conc">“best”</a> PM2.5 site has recent missing data for both 1-hr and 24-hr readings–why?</li>
 <li>Salt Lake County is still <a href="https://www3.epa.gov/airquality/urbanair/sipstatus/reports/ut_areabypoll.html">classified</a> as a <em>Serious</em> non-attainment area by the EPA.</li>
 </ul>

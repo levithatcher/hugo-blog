@@ -186,9 +186,9 @@ df_slim_daily$Trend <- stl_slim$time.series[,'trend']
 head(df_slim_daily, 4)
 ```
 
-You see that, besides the `Date` column we have the raw daily `Measurements` as well as the secular `Trend` column. Let's overlay these two to see what pollution progress (if any) SLC has made over the last five years.
+Besides the `Date` column we have the raw daily `Measurements` as well as the [secular](https://en.wikipedia.org/wiki/Secular_variation) `Trend` column. Let's overlay these two to see what pollution progress (if any) SLC has made over the last five years.
 
-Note that there is missing daily readings from the winter of 2014-2015, so don't focus on that dip.
+Note that the EPA is missing some daily readings from the winter of 2014-2015, so don't focus on that dip.
 
 ```{r}
 # Plot trend over daily data
@@ -207,11 +207,11 @@ ggplot(df_slim_daily, aes(x = Date)) +
 
 ## Conclusions
 
-Hooray, perhaps tentative progress! Note that the de-seasonalized daily 2017 PM2.5 values were generally below those of 2013-2014. The improvement appears to be coming from reducing the winter spikes, which is great. While the trend isn't dramatic and I'd love to corroborate with data from other sites, we do at least appear in a better spot than five years ago.
+Hooray, perhaps tentative progress! **Note that the de-seasonalized daily 2017 PM2.5 values were generally below those of 2013-2014**. The improvement appears to be coming from reduced winter spikes, which is great. While the trend isn't dramatic and I'd love to corroborate with data from other sites, we do at least appear in a better spot than five years ago.
 
 **However**, we still have issues in SLC
 
-- The downward trend has stalled in 2016-2017; what new policies had started in 2013?
+- The downward trend has stalled in 2016-2017; what new policies had started in 2013 that we can double-down on?
 - Our ["best"](http://home.chpc.utah.edu/~whiteman/PM2.5/PM2.5.html#current_conc) PM2.5 site has recent missing data for both 1-hr and 24-hr readings--why?
 - Salt Lake County is still [classified](https://www3.epa.gov/airquality/urbanair/sipstatus/reports/ut_areabypoll.html) as a _Serious_ non-attainment area by the EPA.
 
