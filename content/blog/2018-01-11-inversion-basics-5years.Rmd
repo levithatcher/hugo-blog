@@ -219,6 +219,6 @@ Non-attainment status comes when areas "[persistently exceed](https://deq.utah.g
 
 ## Next steps
 
-Soon I'll try to nail down the trend with *complete* daily data from 2013-2017, provide easier year-over-year comparisons, and make this more robust via a 2008-2017 trend with data from multiple sites.
+Let me know any issues you find above! Soon I'll try to nail down the trend with *complete* daily data from 2013-2017, provide easier year-over-year comparisons, and make this more robust via a 2008-2017 trend with data from multiple sites.
 
 Note that the 2018 session for the [Utah Legislature](https://le.utah.gov/Documents/find.htm) starts on January 22nd!
