@@ -13,7 +13,7 @@ knitr::opts_chunk$set(cache = TRUE, warning = FALSE, message = FALSE,
                       dpi = 200, out.width='650px', fig.width=8, fig.height=4)
 ```
 
-## Background on SLC Air
+## Background on SLC air
 
 For those unfamiliar, Salt Lake City is famous for its exquisite natural beauty, and its winter temperature inversions. These events trap emissions in the valley and make life unpleasant. For the uninitiated, see [here](http://home.chpc.utah.edu/~whiteman/PM2.5/PM2.5.html) and [here](https://ehp.niehs.nih.gov/1104349/). The focus of _today's_ post will be digging into five years of **PM2.5** data in SLC, as this type of inversion-exacerbated pollutant is most frequently linked to [negative health outcomes](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC4740125/). Check out this episode from 2016 (image from [here](http://health.utah.gov/utahair/SLC_51ug-m3.jpg)):
 
