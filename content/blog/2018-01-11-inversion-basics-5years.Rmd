@@ -45,6 +45,7 @@ Around 60k observations for the five year period and lots of columns we don't ne
 
 ```{r}
 # Convert date and time columns into one column
+# TODO: Convert this to dplyr syntax
 df$DateTime <- as.POSIXct(paste(df$`Date Local`, df$`24 Hour Local`), 
                           format="%Y-%m-%d %H:%M")
 
