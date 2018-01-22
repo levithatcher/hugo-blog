@@ -1,5 +1,5 @@
 ---
-title: "Year-over-year SLC pollution comparisons"
+title: "Year-over-year SLC pollution comparisons using multiple sites"
 excerpt: "Are the winters getting better?"
 date: '2018-01-11'
 draft: true
@@ -15,7 +15,7 @@ knitr::opts_chunk$set(cache = TRUE, warning = FALSE, message = FALSE,
 
 Load in the 2013 data to compare Rose Park (49-035-3010) and Hawthorne Elementary (49-035-3006), both of which are in SLC proper and X miles apart as the crow flies.
 
-```{r}
+```{r, include=FALSE}
 library(tidyverse)
 df3 <- read_csv('../data/SLCFiveSitesDaily2013.csv')
 df4 <- read_csv('../data/SLCFiveSitesDaily2014.csv')
@@ -25,25 +25,50 @@ df7 <- read_csv('../data/SLCFiveSitesDaily2017.csv')
 
 df <- dplyr::bind_rows(df3,df4,df5,df6,df7)
 
-glimpse(df)
-dfinal <- df %>%
-  filter(AQS_SITE_ID == 490353010 | AQS_SITE_ID == 490353006) %>%
-  mutate(Date, as.POSIXct(Date, format="%m-%d-%Y)) %>% 
-  mutate(year = format(Date, "%Y")) %>%
-  group_by(year, AQS_SITE_ID) %>%
-  summarise(total = mean(PERCENT_COMPLETE))
-  
-
-print(dfinal)
-
-# Look at the data
-#print(df3, n = 5)
+# Strip out sites that aren't Rose Park/Hawthorne
+df <- df %>%
+  filter(AQS_SITE_ID == 490353010 | AQS_SITE_ID == 490353006)
 ```
 
-Strip out all sites that aren't 
+For brevity, we've loaded in our data and now will trim out the sites that aren't Hawthorne / Rose Park, and only grab only the columns necessary.
 
 ```{r}
+dfinal <- df %>% 
+  # Hawthorne has several options; grab the most complete record
+  filter(POC == 1) %>%
+  filter(AQS_PARAMETER_DESC == 'PM2.5 - Local Conditions') %>%
+  # Change the Site column to be more readable
+  mutate(Site = ifelse(AQS_SITE_ID == 490353006, 'Hawthorne', 'Rose Park')) %>% 
+  mutate(Date = as.Date(Date, format="%m/%d/%Y")) %>%
+  rename(Measurement = `Daily Mean PM2.5 Concentration`) %>%
+  select(Date, Site, Measurement) %>%
+  arrange(Date)
 
+# Look at the data
+print(dfinal, 3)
 ```
 
+Now that we have a simple two-site table to work with, let's see how well the measurements correspond. First, let's compute a running average borrowing code from [here](https://stackoverflow.com/a/4862334).
+
+```{r}
+# First, we grab the two vectors (one for each site)
+
+hawthorne_vect <- dfinal %>% 
+  filter(Site == 'Hawthorne') %>%
+  pull(Measurement)
+
+rose_park_vect <- dfinal %>% 
+  filter(Site == 'Rose Park') %>%
+  pull(Measurement)
+
+# Compute 5-day moving average
+ma <- function(x, n = 5) {
+  stats::filter(x, rep(1/n, n), sides = 2)
+}
+
+hawthorne_ma <- ma(hawthorne_vect)
+
+
+
+```
 
