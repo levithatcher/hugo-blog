@@ -23,7 +23,7 @@ For those unfamiliar, Salt Lake City is famous for its exquisite natural beauty,
 
 The data we'll be using for the analysis comes from the [UDAQ](https://deq.utah.gov/Divisions/daq/index.htm) via the EPA, which keeps detailed air quality data for various sites in SL County. This post will grab data from Hawthorne Elementary (site 490353006) in SLC proper, as that site is noted as being the [most accurate](http://home.chpc.utah.edu/~whiteman/PM2.5/PM2.5.html#current_conc) in the valley (and is [actually the site used](http://home.chpc.utah.edu/~whiteman/PM2.5/PM2.5.html#current_conc) to determine whether the valley meets EPA standards).
 
-We'll pull 2017 hourly data from [here](https://aqs.epa.gov/api) (you'll have to register) with these parameters:
+We'll pull 2013-2017 hourly data from [here](https://aqs.epa.gov/api) (you'll have to register) with these parameters:
 
 <img src="figs/2017-01-11-inversion-basics/data_download_parameters.png" width="99%">
 
