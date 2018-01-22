@@ -1,0 +1,49 @@
+---
+title: "Year-over-year SLC pollution comparisons"
+excerpt: "Are the winters getting better?"
+date: '2018-01-11'
+draft: true
+showpagemeta: true
+---
+  
+```{r setup, include=FALSE}
+library(knitr)
+knitr::opts_chunk$set(cache = TRUE, warning = FALSE, message = FALSE, 
+                      echo = TRUE, dev = 'png',
+                      dpi = 200, out.width='650px', fig.width=8, fig.height=4)
+```
+
+Load in the 2013 data to compare Rose Park (49-035-3010) and Hawthorne Elementary (49-035-3006), both of which are in SLC proper and X miles apart as the crow flies.
+
+```{r}
+library(tidyverse)
+df3 <- read_csv('../data/SLCFiveSitesDaily2013.csv')
+df4 <- read_csv('../data/SLCFiveSitesDaily2014.csv')
+df5 <- read_csv('../data/SLCFiveSitesDaily2015.csv')
+df6 <- read_csv('../data/SLCFiveSitesDaily2016.csv')
+df7 <- read_csv('../data/SLCFiveSitesDaily2017.csv')
+
+df <- dplyr::bind_rows(df3,df4,df5,df6,df7)
+
+glimpse(df)
+dfinal <- df %>%
+  filter(AQS_SITE_ID == 490353010 | AQS_SITE_ID == 490353006) %>%
+  mutate(Date, as.POSIXct(Date, format="%m-%d-%Y)) %>% 
+  mutate(year = format(Date, "%Y")) %>%
+  group_by(year, AQS_SITE_ID) %>%
+  summarise(total = mean(PERCENT_COMPLETE))
+  
+
+print(dfinal)
+
+# Look at the data
+#print(df3, n = 5)
+```
+
+Strip out all sites that aren't 
+
+```{r}
+
+```
+
+
