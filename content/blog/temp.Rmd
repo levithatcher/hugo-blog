@@ -13,7 +13,8 @@ knitr::opts_chunk$set(cache = TRUE, warning = FALSE, message = FALSE,
                       dpi = 200, out.width='650px', fig.width=8, fig.height=4)
 ```
 
-Load in the 2013 data to compare Rose Park (49-035-3010) and Hawthorne Elementary (49-035-3006), both of which are in SLC proper and X miles apart as the crow flies.
+Let's look at 2013-2017 **daily** data to compare Rose Park (49-035-3010) and Hawthorne Elementary (49-035-3006), both of which are in SLC proper and X miles apart as the crow flies.
+
 
 ```{r, include=FALSE}
 library(tidyverse)
@@ -48,17 +49,25 @@ dfinal <- df %>%
 print(dfinal, 3)
 ```
 
+While we'd expect roughly 1826 daily measurements over five years, we have less than that (but still enough to work with).
+
+```{r}
+dfinal %>% 
+  group_by(Site) %>% 
+  summarize(`Measurements Per Site` = length(Measurement))
+```
+
 Now that we have a simple two-site table to work with, let's see how well the measurements correspond. First, let's compute a running average borrowing code from [here](https://stackoverflow.com/a/4862334).
 
 ```{r}
 # First, we grab the two vectors (one for each site)
 
 hawthorne_vect <- dfinal %>% 
-  filter(Site == 'Hawthorne') %>%
+  dplyr::filter(Site == 'Hawthorne') %>%
   pull(Measurement)
 
 rose_park_vect <- dfinal %>% 
-  filter(Site == 'Rose Park') %>%
+  dplyr::filter(Site == 'Rose Park') %>%
   pull(Measurement)
 
 # Compute 5-day moving average
@@ -68,7 +77,7 @@ ma <- function(x, n = 5) {
 
 hawthorne_ma <- ma(hawthorne_vect)
 
-
+rose_park_ma <- ma(rose_park_vect)
 
 ```
 
