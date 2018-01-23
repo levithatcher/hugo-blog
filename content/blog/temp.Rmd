@@ -57,27 +57,40 @@ dfinal %>%
   summarize(`Measurements Per Site` = length(Measurement))
 ```
 
-Now that we have a simple two-site table to work with, let's see how well the measurements correspond. First, let's compute a running average borrowing code from [here](https://stackoverflow.com/a/4862334).
+Now that we have a simple two-site table to work with, let's see how well the measurements correspond. First, let's pivot the table to and [compute](https://stackoverflow.com/a/4862334) a running average for both Rose Park and Hawthorne.
 
 ```{r}
-# First, we grab the two vectors (one for each site)
+df_pivot <- dfinal %>% 
+  tidyr::spread(Site, Measurement)
 
-hawthorne_vect <- dfinal %>% 
-  dplyr::filter(Site == 'Hawthorne') %>%
-  pull(Measurement)
-
-rose_park_vect <- dfinal %>% 
-  dplyr::filter(Site == 'Rose Park') %>%
-  pull(Measurement)
-
-# Compute 5-day moving average
-ma <- function(x, n = 5) {
+# Compute 3-day moving average
+ma <- function(x, n = 3) {
   stats::filter(x, rep(1/n, n), sides = 2)
 }
 
-hawthorne_ma <- ma(hawthorne_vect)
+df_pivot$`Hawthorne MA` <- ma(df_pivot$Hawthorne)
 
-rose_park_ma <- ma(rose_park_vect)
+df_pivot$`Rose Park MA` <- ma(df_pivot$`Rose Park`)
 
 ```
 
+
+Now that we have the two moving averages, let's compare via ggplot2.
+
+```{r}
+library(scales)
+ggplot(df_pivot, aes(x = Date)) +
+  geom_line(aes(y = `Hawthorne MA`, colour = "Hawthorne")) +
+  geom_line(aes(y = `Rose Park MA`, colour = "Rose Park")) +
+  labs(title = "3-Day Running Average PM2.5 in SLC from 2013 - 2017") +
+  scale_colour_manual(values = c("black", "red")) +
+  scale_y_log10(name = "PM2.5 µg/m3", 
+                limits = c(1,NA), 
+                breaks = c(1,20,40,60,80,100)) +
+  scale_x_date(name = "Year", 
+               labels = date_format("%Y-%m-%d"), 
+               breaks = date_breaks("1 year"))
+
+```
+
+While the missing data is annoying, it indeed _looks_ like there is good agreement between the Hawthorne and Rose Park daily PM2.5 values from 2013-2017. Interesting that occasionally both sites are missing data while other times they complement each other's failings (wohoo!).
