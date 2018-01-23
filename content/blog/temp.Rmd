@@ -1,9 +1,9 @@
 ---
 title: "Year-over-year SLC pollution comparisons using multiple sites"
-excerpt: "Are the winters getting better?"
+draft: yes
 date: '2018-01-11'
-draft: true
-showpagemeta: true
+showpagemeta: yes
+excerpt: Are the winters getting better?
 ---
   
 ```{r setup, include=FALSE}
@@ -57,7 +57,8 @@ dfinal %>%
   summarize(`Measurements Per Site` = length(Measurement))
 ```
 
-Now that we have a simple two-site table to work with, let's see how well the measurements correspond. First, let's pivot the table to and [compute](https://stackoverflow.com/a/4862334) a running average for both Rose Park and Hawthorne.
+Now that we have a simple two-site table to work with, let's see how well the measurements correspond. First, let's  pivot the table such that both sites are in their own column and [compute](https://stackoverflow.com/a/4862334) a 3-day running average.
+
 
 ```{r}
 df_pivot <- dfinal %>% 
@@ -71,11 +72,9 @@ ma <- function(x, n = 3) {
 df_pivot$`Hawthorne MA` <- ma(df_pivot$Hawthorne)
 
 df_pivot$`Rose Park MA` <- ma(df_pivot$`Rose Park`)
-
 ```
 
-
-Now that we have the two moving averages, let's compare via ggplot2.
+Now we plot the 3-day running average for both Hawthorne and Rose Park.
 
 ```{r}
 library(scales)
@@ -86,11 +85,45 @@ ggplot(df_pivot, aes(x = Date)) +
   scale_colour_manual(values = c("black", "red")) +
   scale_y_log10(name = "PM2.5 µg/m3", 
                 limits = c(1,NA), 
-                breaks = c(1,20,40,60,80,100)) +
+                breaks = c(1, 5, 10, 15)) +
   scale_x_date(name = "Year", 
                labels = date_format("%Y-%m-%d"), 
                breaks = date_breaks("1 year"))
 
 ```
 
-While the missing data is annoying, it indeed _looks_ like there is good agreement between the Hawthorne and Rose Park daily PM2.5 values from 2013-2017. Interesting that occasionally both sites are missing data while other times they complement each other's failings (wohoo!).
+While the missing data is annoying, it indeed _looks_ like there is fairly good agreement between the Hawthorne and Rose Park daily PM2.5 values from 2013-2017. And it indeed appears that for both sites winter air quality has improved since 2013 (more to come below).
+
+Even though Hawthorne and Rose Park both move together, how to they differ? To check longer-term differences, let's plot with a `loess` smoother (which is built into `ggplot2`).
+
+```{r}
+library(scales)
+ggplot(df_pivot, aes(x = Date)) +
+  geom_smooth(aes(y = Hawthorne, colour = "Hawthorne"), method = 'loess') +
+  geom_smooth(aes(y = `Rose Park`, colour = "Rose Park"), method = 'loess') +
+  labs(title = "Smoothed PM2.5 in SLC from 2013 - 2017") +
+  scale_colour_manual(values = c("black", "red")) +
+  scale_y_log10(name = "PM2.5 µg/m3", 
+                limits = c(1,NA), 
+                breaks = c(1, 5, 7, 10, 15)) +
+  scale_x_date(name = "Year", 
+               labels = date_format("%Y-%m-%d"), 
+               breaks = date_breaks("1 year"))
+
+```
+
+Interesting--Rose Park PM2.5 levels are systematically higher than those at Hawthorne Elementary (which is in the Liberty Wells neighborhood). While a background difference between of ~1ug/m3 doesn't seem like much, this smoothing likely hides shorter-term spikes; even differences in low-level PM2.5 exposure [can lead to adverse health effects](http://www.nejm.org/doi/full/10.1056/NEJMoa1702747). 
+
+While this isn't confirmed, the heightened PM2.5 levels in Rose Park could come from the local refinery, which is just 1.5 miles from the measurement site.
+
+![](../figs/temp/map.png)
+
+Now, let's make the year-over-year comparison crystal clear.
+
+
+```{r}
+
+
+```
+
+
