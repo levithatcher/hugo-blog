@@ -54,10 +54,9 @@ Let's now count up the average number of observations per year, to see how much 
 
 ```{r}
 dfinal %>% 
-  mutate(Year = year(Date)) %>% 
+  mutate(Year = lubridate::year(Date)) %>% 
   group_by(Site, Year) %>% 
-  summarize(`Measurements Per Site` = length(Measurement)) %>% 
-  print(n=20)
+  summarize(`Measurements Per Site` = length(Measurement))
 ```
 
 Note that we weirdly have fewer than 365 observations per year (but foruntately still enough to work with). Note sure why these sites have such issues--[anyone](https://twitter.com/levithatcher)?
@@ -88,6 +87,20 @@ ggplot(df_pivot, aes(x = Date)) +
   geom_line(aes(y = `Rose Park MA`, colour = "Rose Park")) +
   labs(title = "3-Day Running Average PM2.5 in SLC from 2012 - 2017") +
   scale_colour_manual(values = c("black", "red")) +
+  scale_y_log10(name = "PM2.5 µg/m3", 
+                limits = c(1,NA), 
+                breaks = c(1, 5, 10, 15)) +
+  scale_x_date(name = "Year", 
+               labels = date_format("%Y-%m-%d"), 
+               breaks = date_breaks("1 year"))
+
+```
+
+```{r}
+library(scales)
+ggplot(df_pivot, aes(x = Date)) +
+  geom_line(aes(y = `Hawthorne MA`, colour = "Hawthorne")) +
+  labs(title = "3-Day Running Average PM2.5 in SLC from 2012 - 2017") +
   scale_y_log10(name = "PM2.5 µg/m3", 
                 limits = c(1,NA), 
                 breaks = c(1, 5, 10, 15)) +
@@ -132,7 +145,10 @@ dividers <- as.Date(paste0(2012:2017, "06", "01"), format = "%Y%m%d")
 df_pivot <- df_pivot %>%
   mutate(Season = cut(as.numeric(Date), as.numeric(dividers), 
                       include.lowest = TRUE),
-         Season = as.numeric(Season))
+         Season = as.numeric(Season),
+         Month = lubridate::month(Date)) %>% 
+  filter(Month %in% c(1,2,11,12), # Only care about winter months
+         !is.na(Season))          # This avoids an NA facet plot
 ```
 
 And now we plot the five winters.
@@ -140,20 +156,20 @@ And now we plot the five winters.
 ```{r}
 # Plot
 p <- ggplot(df_pivot, aes(x = Date, y = `Hawthorne`)) + 
-  geom_smooth(method = 'loess') +
+  geom_smooth(method = "loess") +
+  #geom_point() +
   scale_y_log10(name = "PM2.5 µg/m3", 
-                limits = c(NA,20), 
-                breaks = c(1, 5, 7, 10, 15)) +
-  scale_x_date(name = "Date",
+                limits = c(1,NA), 
+                breaks = c(1, 5, 7, 10, 15, 20, 30, 40, 50)) +
+  scale_x_date(name = "Winter Month",
                labels = date_format("%m"),
-               limits = c("11",""),
                breaks = date_breaks("1 month"))
 p + facet_grid(. ~ Season, scale = "free")
 
 
 ```
 
-```{r}
+```{r, eval=FALSE, include=FALSE}
 df_pivot %>%
   filter(Year == 2016) %>%
   mutate(Month = format(Date, "%m")) %>% 
