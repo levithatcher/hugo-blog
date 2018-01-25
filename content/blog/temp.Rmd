@@ -13,7 +13,13 @@ knitr::opts_chunk$set(cache = TRUE, warning = FALSE, message = FALSE,
                       dpi = 200, out.width='650px', fig.width=8, fig.height=4)
 ```
 
+## Background
+
+## The Plan
+
 Let's look at 2012-2017 **daily** data to compare Rose Park (49-035-3010) and Hawthorne Elementary (49-035-3006), both of which are in SLC proper and X miles apart as the crow flies. We download the data from [here](https://www.epa.gov/outdoor-air-quality-data/download-daily-data). 
+
+## Get the data
 
 
 ```{r, include=FALSE}
@@ -31,6 +37,10 @@ df <- dplyr::bind_rows(df2,df3,df4,df5,df6,df7)
 df <- df %>%
   filter(AQS_SITE_ID == 490353010 | AQS_SITE_ID == 490353006)
 ```
+
+## The analysis
+
+### Summarize and check the data
 
 For brevity, we've loaded in our data and now will trim out the sites that aren't Hawthorne / Rose Park, and only grab only the columns necessary.
 
@@ -60,6 +70,8 @@ dfinal %>%
 ```
 
 Note that we weirdly have fewer than 365 observations per year (but foruntately still enough to work with). Note sure why these sites have such issues--[anyone](https://twitter.com/levithatcher)?
+
+### Running average two-site comparison over time
 
 Now that we have a simple two-site table to work with, let's see how well the measurements correspond. First, let's  pivot the table such that both sites are in their own column and [compute](https://stackoverflow.com/a/4862334) a 3-day running average.
 
@@ -96,41 +108,28 @@ ggplot(df_pivot, aes(x = Date)) +
 
 ```
 
-```{r}
-library(scales)
-ggplot(df_pivot, aes(x = Date)) +
-  geom_line(aes(y = `Hawthorne MA`, colour = "Hawthorne")) +
-  labs(title = "3-Day Running Average PM2.5 in SLC from 2012 - 2017") +
-  scale_y_log10(name = "PM2.5 µg/m3", 
-                limits = c(1,NA), 
-                breaks = c(1, 5, 10, 15)) +
-  scale_x_date(name = "Year", 
-               labels = date_format("%Y-%m-%d"), 
-               breaks = date_breaks("1 year"))
-
-```
-
 While the missing data is annoying, it indeed _looks_ like there is fairly good agreement between the Hawthorne and Rose Park daily PM2.5 values from 2012-2017. And it indeed appears that for both sites winter air quality has improved since 2013 (more to come below).
+
+### Differences after [loess smoothing](https://en.wikipedia.org/wiki/Local_regression)
 
 Even though Hawthorne and Rose Park both move together, how to they differ? To check longer-term differences, let's plot with a `loess` smoother (which is built into `ggplot2`).
 
 ```{r}
-library(scales)
 ggplot(df_pivot, aes(x = Date)) +
   geom_smooth(aes(y = Hawthorne, colour = "Hawthorne"), method = 'loess') +
   geom_smooth(aes(y = `Rose Park`, colour = "Rose Park"), method = 'loess') +
   labs(title = "Smoothed PM2.5 in SLC from 2013 - 2017") +
   scale_colour_manual(values = c("black", "red")) +
   scale_y_log10(name = "PM2.5 µg/m3", 
-                limits = c(3,NA), 
-                breaks = c(1, 5, 7, 10, 15)) +
+                limits = c(5,NA), 
+                breaks = c(5, 8, 10, 12, 15)) +
   scale_x_date(name = "Year", 
                labels = date_format("%Y-%m-%d"), 
                breaks = date_breaks("1 year"))
 
 ```
 
-Interesting--Rose Park PM2.5 levels are systematically higher than those at Hawthorne Elementary (which is in the Liberty Wells neighborhood). While a background difference between of ~1ug/m3 doesn't seem like much, this smoothing likely hides shorter-term spikes; even differences in low-level PM2.5 exposure [can lead to adverse health effects](http://www.nejm.org/doi/full/10.1056/NEJMoa1702747). 
+Interesting--Rose Park PM2.5 levels are systematically higher than those at Hawthorne Elementary (which is in the Liberty Wells neighborhood). While a background difference between of ~1ug/m3 doesn't seem like much, this smoothing likely hides shorter-term spikes; what's scary is even differences in low-level PM2.5 exposure [can lead to adverse health effects](http://www.nejm.org/doi/full/10.1056/NEJMoa1702747). 
 
 While this isn't confirmed, the heightened PM2.5 levels in Rose Park could come from the local refinery, which is just 1.5 miles east of the air quality measurement site.
 
@@ -151,7 +150,7 @@ df_pivot <- df_pivot %>%
          !is.na(Season))          # This avoids an NA facet plot
 ```
 
-And now we plot the five winters.
+And now we plot the five winters for Hawthorne.
 
 ```{r}
 # Plot
@@ -159,14 +158,28 @@ p <- ggplot(df_pivot, aes(x = Date, y = `Hawthorne`)) +
   geom_smooth(method = "loess") +
   #geom_point() +
   scale_y_log10(name = "PM2.5 µg/m3", 
-                limits = c(1,NA), 
+                limits = c(2,NA), 
                 breaks = c(1, 5, 7, 10, 15, 20, 30, 40, 50)) +
   scale_x_date(name = "Winter Month",
                labels = date_format("%m"),
                breaks = date_breaks("1 month"))
 p + facet_grid(. ~ Season, scale = "free")
+```
 
+And for Rose Park
 
+```{r}
+# Plot
+p <- ggplot(df_pivot, aes(x = Date, y = `Rose Park`)) + 
+  geom_smooth(method = "loess") +
+  #geom_point() +
+  scale_y_log10(name = "PM2.5 µg/m3", 
+                limits = c(2,NA), 
+                breaks = c(1, 5, 7, 10, 15, 20, 30, 40, 50)) +
+  scale_x_date(name = "Winter Month",
+               labels = date_format("%m"),
+               breaks = date_breaks("1 month"))
+p + facet_grid(. ~ Season, scale = "free")
 ```
 
 ```{r, eval=FALSE, include=FALSE}
