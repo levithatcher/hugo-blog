@@ -35,7 +35,7 @@ We'll be working with R and the [tidyverse](https://www.tidyverse.org/).
 
 ```{r}
 library(tidyverse)
-df <- read_csv('../data/SLCHawthornePM2-5_2013-2017.csv')
+df <- read_csv('../data/SLCPM2_5/SLCHawthorne_PM2.5_Hourly_2013-2017.csv')
 
 # Look at the data
 print(df, n = 5)

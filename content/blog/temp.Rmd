@@ -1,9 +1,9 @@
 ---
-title: "Year-over-year SLC pollution comparisons using multiple sites"
+title: "SLC year-over-year winter pollution comparisons using multiple sites"
 draft: yes
 date: '2018-01-11'
 showpagemeta: yes
-excerpt: Are the winters getting better?
+excerpt: Wow, the winters are getting better?
 ---
   
 ```{r setup, include=FALSE}
@@ -15,12 +15,19 @@ knitr::opts_chunk$set(cache = TRUE, warning = FALSE, message = FALSE,
 
 ## Background
 
+SLC is famous for its winter air pollution (specifically PM2.5). We want to nail down if it's getting better. In our last post we looked at hourly measurements from Hawthorne Elementary in SLC proper. The trend was encouragingly downward! But, that post only looked at one site and didn't focus on the winter (when the problem is at its worst).
+
 ## The Plan
 
-Let's look at 2012-2017 **daily** data to compare Rose Park (49-035-3010) and Hawthorne Elementary (49-035-3006), both of which are in SLC proper and X miles apart as the crow flies. We download the data from [here](https://www.epa.gov/outdoor-air-quality-data/download-daily-data). 
+Let's look at 2007-2017 **daily** data to compare Rose Park (49-035-3010) and Hawthorne Elementary (49-035-3006), both of which are in SLC proper and X miles apart as the crow flies. We'll work up to a winter by winter comparison over the last ten years.
 
 ## Get the data
 
+We download the data from [here](https://aqs.epa.gov/api) and again use these parameters:
+
+<img src="figs/2017-01-11-inversion-basics/data_download_parameters.png" width="99%">
+
+Let's read the flat files into R and combine.
 
 ```{r, include=FALSE}
 library(tidyverse)
