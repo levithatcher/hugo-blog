@@ -33,7 +33,7 @@ Let's read the flat files into R and combine.
 library(tidyverse)
 # While I could have batched this into one file, I didn't want
 # to mask how the original data looked coming from EPA website (reproducibility!)
-dfH <- read_csv('../data/SLCPM2_5/SLCHawthorne_PM2.5_Daily_2007-2017.csv')
+dfH <- read_csv('../data/SLCPM2_5/SLCHawthorne_PM2.5_Daily_1999-2017.csv')
 dfRP <- read_csv('../data/SLCPM2_5/SLCRosePark_PM2.5_Daily_2007-2017.csv')
 
 df <- dplyr::bind_rows(dfH, dfRP)
@@ -59,7 +59,7 @@ dfinal <- df %>%
   arrange(Date)
 
 # Look at the data
-print(dfinal, 3)
+head(dfinal, 3)
 ```
 
 Let's now count up the average number of observations per year, to see how much data might be missing.
@@ -74,35 +74,11 @@ dfinal %>%
 
 Note that we weirdly have fewer than 365 observations per year (but foruntately still enough to work with). Note sure why these sites have such issues--[anyone](https://twitter.com/levithatcher)?
 
-### Running average two-site comparison over time
+### Two-site comparison over time
 
-Now that we have a simple two-site table to work with, let's see how well the measurements correspond. First, let's  pivot the table such that both sites are in their own column and [compute](https://stackoverflow.com/a/4862334) a 3-day running average.
-
-
-```{r}
-# df_pivot <- dfinal %>% 
-#   tidyr::spread(Site, Measurement)
-# 
-# # Compute 3-day moving average
-# ma <- function(x, n = 3) {
-#   stats::filter(x, rep(1/n, n), sides = 2)
-# }
-# 
-# df_pivot$`Hawthorne MA` <- ma(df_pivot$Hawthorne)
-# 
-# df_pivot$`Rose Park MA` <- ma(df_pivot$`Rose Park`)
-# 
-# # How do we do this?
-# dfinal <- dfinal %>% 
-#   filter(Site = Hawthorne) %>% 
-#   mutate(`Hawthorne MA` = ma(Measurement))
-```
-
-Now we plot the 3-day running average for both Hawthorne and Rose Park.
+Now that we've simplified the dataset and feel good about its coverage over time, let's see how well the measurements from Hawthorne and Rose Park correspond. While there are statistical ways to do this, let's simply plot.
 
 ```{r}
-# TODO: use new data to do 2007-2017
-# TODO plot running average using tidy format
 library(scales)
 ggplot(dfinal, aes(x = Date, y = Measurement, color = Site)) +
   geom_line() +
@@ -111,22 +87,23 @@ ggplot(dfinal, aes(x = Date, y = Measurement, color = Site)) +
   scale_y_log10(name = "PM2.5 µg/m3", 
                 limits = c(1,NA), 
                 breaks = c(1, 5, 10, 15)) +
-  scale_x_date(name = "Year", 
-               labels = date_format("%Y-%m-%d"), 
+  scale_x_date(name = "Year",
+               labels = date_format("%Y-%m-%d"),
+               limits = c(as.Date('2007-01-01'),NA),
                breaks = date_breaks("1 year"))
 
 ```
 
-While the missing data is annoying, it indeed _looks_ like there is fairly good agreement between the Hawthorne and Rose Park daily PM2.5 values from 2007-2017. And it indeed appears that for both sites winter air quality has generally been improving (more to come below).
+While some missing data, it indeed _looks_ like there is fairly good agreement between the Hawthorne and Rose Park daily PM2.5 values from 2007-2017. And it indeed appears that for both sites winter air quality has generally been improving (more to come below).
 
 ### Differences after [loess smoothing](https://en.wikipedia.org/wiki/Local_regression)
 
-Even though Hawthorne and Rose Park both move together, how to they differ? To check longer-term differences, let's plot with a `loess` smoother (which is built into `ggplot2`).
+Even though Hawthorne and Rose Park both move together, how to they differ? To check longer-term differences, let's plot with a `loess` smoother (which is built into `ggplot2`). Here we'll use 
 
 ```{r}
 ggplot(dfinal, aes(x = Date, y = Measurement, color = Site)) +
   geom_smooth(method = 'loess') +
-  labs(title = "Smoothed PM2.5 in SLC from 2007 - 2017") +
+  labs(title = "Smoothed PM2.5 in SLC from 1999 - 2017") +
   scale_colour_manual(values = c("black", "red")) +
   scale_y_log10(name = "PM2.5 µg/m3", 
                 breaks = c(2, 5, 6, 8, 10, 12, 15)) +
@@ -136,9 +113,9 @@ ggplot(dfinal, aes(x = Date, y = Measurement, color = Site)) +
 
 ```
 
-**Overall**, outside of a spike in 2011-2012, note the downward trend. Interestingly Rose Park PM2.5 levels are systematically higher than those at Hawthorne Elementary (which is in the Liberty Wells neighborhood). Over the last five years there's been a difference of ~1 ug/m3. While that level of background difference doesn't seem like much, this smoothing likely hides shorter-term spikes; what's scary is even differences in low-level PM2.5 exposure [can lead to adverse health effects](http://www.nejm.org/doi/full/10.1056/NEJMoa1702747). 
+**Overall**, outside of a spike in 2011-2012, note the downward trend. Interestingly Rose Park PM2.5 levels are typically higher than those at Hawthorne Elementary (which is in the Liberty Wells neighborhood). Over the last six years there's been a difference of ~1 ug/m3. While that level of background difference doesn't seem like much, this smoothing likely hides shorter-term spikes; what's scary is even differences in low-level PM2.5 exposure [can lead to adverse health effects](http://www.nejm.org/doi/full/10.1056/NEJMoa1702747). 
 
-While this isn't confirmed, the heightened PM2.5 levels in Rose Park could be due to proximity to the local refinery, which is just 1.5 miles east of the air quality measurement site.
+While this isn't confirmed, the heightened PM2.5 levels in Rose Park _could_ be due to proximity to the local refinery, which is just 1.5 miles east of the air quality measurement site (although the convergence from 2009-2011 is lost on me).
 
 ![](../figs/temp/map.png)
 
@@ -156,7 +133,8 @@ dfinal <- dfinal %>%
                       include.lowest = TRUE),
          Season = as.numeric(Season),
          Month = lubridate::month(Date)) %>% 
-  filter(Month %in% c(1,2,11,12), # Only care about winter months
+  filter(Date > as.Date('2006-06-01'),   
+         Month %in% c(1,2,11,12), # Only care about winter months
          !is.na(Season))          # This avoids an NA facet plot
 ```
 
