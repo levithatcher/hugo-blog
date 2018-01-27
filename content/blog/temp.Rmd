@@ -33,8 +33,8 @@ Let's read the flat files into R and combine.
 library(tidyverse)
 # While I could have batched this into one file, I didn't want
 # to mask how the original data looked coming from EPA website (reproducibility!)
-dfH <- read_csv('../data/SLCPM2.5Winter/HawthorneDaily-2007-2017.csv')
-dfRP <- read_csv('../data/SLCPM2.5Winter/RoseParkDaily-2007-2017.csv')
+dfH <- read_csv('../data/SLCPM2_5/SLCHawthorne_PM2.5_Daily_2007-2017.csv')
+dfRP <- read_csv('../data/SLCPM2_5/SLCRosePark_PM2.5_Daily_2007-2017.csv')
 
 df <- dplyr::bind_rows(dfH, dfRP)
 ```
