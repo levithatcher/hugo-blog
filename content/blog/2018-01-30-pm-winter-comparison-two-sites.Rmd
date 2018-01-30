@@ -13,6 +13,10 @@ knitr::opts_chunk$set(cache = TRUE, warning = FALSE, message = FALSE,
                       dpi = 200, out.width='650px', fig.width=8, fig.height=4)
 ```
 
+```{r echo=FALSE}
+blogdown::shortcode('tweet', '941522990470127616')
+```
+
 ## Background
 
 SLC is famous for its winter air pollution (specifically PM2.5). We want to nail down if it's getting better. In our [last post](https://www.levithatcher.com/blog/2018-01-11-inversion-basics-5years/) we looked at hourly measurements from Hawthorne Elementary in SLC proper. The trend was encouragingly downward! But, that post only looked at one site and didn't focus on the winter (when the problem is at its worst).
@@ -132,7 +136,11 @@ ggplot(dfinal, aes(x = Date, y = Measurement, color = Site)) +
                   expand = FALSE)
 ```
 
-Over much of the last six years there's been a difference of ~1 µg/m3 between the sites. While that level of background difference doesn't seem like much, this smoothing likely hides shorter-term spikes; what's scary is even differences in low-level PM2.5 exposure [can lead to adverse health effects](http://www.nejm.org/doi/full/10.1056/NEJMoa1702747). 
+Over much of the last six years there's been a difference of ~1 µg/m3 between the sites. While that level of background difference doesn't seem like much, this smoothing likely hides shorter-term spikes; what's scary is even differences in low-level PM2.5 exposure [can lead to adverse health effects](http://www.nejm.org/doi/full/10.1056/NEJMoa1702747).
+
+```{r echo=FALSE}
+blogdown::shortcode('tweet', '956547307838750720')
+```
 
 While this is speculation, the heightened PM2.5 levels in Rose Park _could_ be due to proximity to the local refinery, which is just 1.5 miles east of the air quality measurement site (although it's totally lost on me why the difference is exacerbated in 2012).
 

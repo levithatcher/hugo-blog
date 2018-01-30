@@ -8,6 +8,7 @@ excerpt: Wow, the winters are getting better?
 
 
 
+{{% tweet "941522990470127616" %}}
 <section id="background" class="level2">
 <h2>Background</h2>
 <p>SLC is famous for its winter air pollution (specifically PM2.5). We want to nail down if it’s getting better. In our <a href="https://www.levithatcher.com/blog/2018-01-11-inversion-basics-5years/">last post</a> we looked at hourly measurements from Hawthorne Elementary in SLC proper. The trend was encouragingly downward! But, that post only looked at one site and didn’t focus on the winter (when the problem is at its worst).</p>
@@ -91,7 +92,7 @@ ggplot(dfinal, aes(x = Date, y = Measurement, color = Site)) +
                labels = date_format(&quot;%Y-%m&quot;),
                limits = c(as.Date(&#39;2007-01-01&#39;),NA),
                breaks = date_breaks(&quot;1 year&quot;))</code></pre>
-<p><img src="/blog/2018-01-30-pm-winter-comparison-two-sites_files/figure-html/unnamed-chunk-4-1.png" width="650px" /></p>
+<p><img src="/blog/2018-01-30-pm-winter-comparison-two-sites_files/figure-html/unnamed-chunk-5-1.png" width="650px" /></p>
 <p>While some missing data, it indeed <em>looks</em> like there is fairly good agreement between the Hawthorne and Rose Park daily PM2.5 values from 2007-2017. And it indeed appears that for both sites winter air quality has generally been improving.</p>
 </section>
 <section id="differences-after-loess-smoothing" class="level3">
@@ -108,7 +109,7 @@ ggplot(dfinal, aes(x = Date, y = Measurement, color = Site)) +
                           as.Date(&#39;2017-12-01&#39;)),
                labels = date_format(&quot;%Y&quot;), 
                breaks = date_breaks(&quot;1 year&quot;))</code></pre>
-<p><img src="/blog/2018-01-30-pm-winter-comparison-two-sites_files/figure-html/unnamed-chunk-5-1.png" width="650px" /></p>
+<p><img src="/blog/2018-01-30-pm-winter-comparison-two-sites_files/figure-html/unnamed-chunk-6-1.png" width="650px" /></p>
 <p><strong>Overall</strong>, note the downward Hawthorne trend since ~2004! Interestingly Rose Park PM2.5 levels are typically higher than those at Hawthorne Elementary (which is in the Liberty Wells neighborhood). Let’s zoom a bit, since Rose Park data starts so much later.</p>
 <pre class="r"><code>ggplot(dfinal, aes(x = Date, y = Measurement, color = Site)) +
   geom_smooth(method = &#39;loess&#39;) +
@@ -123,8 +124,9 @@ ggplot(dfinal, aes(x = Date, y = Measurement, color = Site)) +
   coord_cartesian(xlim=c(as.Date(&#39;2008-01-01&#39;),
                          as.Date(&#39;2017-12-01&#39;)), 
                   expand = FALSE)</code></pre>
-<p><img src="/blog/2018-01-30-pm-winter-comparison-two-sites_files/figure-html/unnamed-chunk-6-1.png" width="650px" /></p>
+<p><img src="/blog/2018-01-30-pm-winter-comparison-two-sites_files/figure-html/unnamed-chunk-7-1.png" width="650px" /></p>
 <p>Over much of the last six years there’s been a difference of ~1 µg/m3 between the sites. While that level of background difference doesn’t seem like much, this smoothing likely hides shorter-term spikes; what’s scary is even differences in low-level PM2.5 exposure <a href="http://www.nejm.org/doi/full/10.1056/NEJMoa1702747">can lead to adverse health effects</a>.</p>
+{{% tweet "956547307838750720" %}}
 <p>While this is speculation, the heightened PM2.5 levels in Rose Park <em>could</em> be due to proximity to the local refinery, which is just 1.5 miles east of the air quality measurement site (although it’s totally lost on me why the difference is exacerbated in 2012).</p>
 <p><img src="../figs/temp/map.png" /></p>
 </section>
@@ -168,7 +170,7 @@ ggplot(dfinal, aes(x = Date, y = Measurement)) +
   facet_grid(Site ~ Season, 
              scale = &quot;free&quot;, 
              labeller = labeller(Season = as_labeller(season_names)))</code></pre>
-<p><img src="/blog/2018-01-30-pm-winter-comparison-two-sites_files/figure-html/unnamed-chunk-8-1.png" width="650px" /></p>
+<p><img src="/blog/2018-01-30-pm-winter-comparison-two-sites_files/figure-html/unnamed-chunk-10-1.png" width="650px" /></p>
 <p>First, note how similar the patterns are between Rose Park and Hawthorne for a given winter–it’s heartening to see the signal is roughly what we’d expect. There is some missing data, however, which is why there’s so much gray in Hawthorne for 2014-15.</p>
 </section>
 </section>
