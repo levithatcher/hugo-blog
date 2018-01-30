@@ -21,7 +21,7 @@ enableRobotsTXT = true
 ## Site Settings
 [params]
 author = "Levi Thatcher"
-intro = "Purveyer of machine learning infrastructure"
+intro = "Purveyer of data learning infrastructure"
 description = "VP, Data Science @ Health Catalyst"
 staticDir = "static"
 
