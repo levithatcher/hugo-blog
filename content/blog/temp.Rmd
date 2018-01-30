@@ -43,26 +43,25 @@ df <- dplyr::bind_rows(dfH, dfRP)
 
 ### Summarize and check the data
 
-For brevity, we've loaded in our data and now will trim out the sites that aren't Hawthorne / Rose Park, and only grab only the columns necessary.
+For brevity, we've loaded in our data and now we'll grab data from the most robust Hawthorne sensor and only grab only the columns necessary.
 
 ```{r}
 dfinal <- df %>% 
   # Hawthorne has several options; grab the most complete record
-  filter(POC == 1,
-         `AQS Parameter Desc` == 'PM2.5 - Local Conditions',
-         `Site Num` == 3006 | `Site Num` == 3010) %>%
+  filter(POC == 1, 
+         `AQS Parameter Desc` == 'PM2.5 - Local Conditions') %>% 
   # Change the Site column to be more readable
   mutate(Site = ifelse(`Site Num` == 3006, 'Hawthorne', 'Rose Park')) %>% 
   mutate(Date = as.Date(`Date Local`, format="%m/%d/%Y")) %>%
   rename(Measurement = `Sample Measurement`) %>%
   select(Date, Site, Measurement) %>%
-  arrange(Date)
+  arrange(desc(Date))
 
 # Look at the data
-head(dfinal, 3)
+head(dfinal, 4)
 ```
 
-Let's now count up the average number of observations per year, to see how much data might be missing.
+Nice and simple. Note that this tibble is the handy [tidy format](https://blog.rstudio.com/2014/07/22/introducing-tidyr/), in that you could add any number of sites and it wouldn't require the annoyance of adding new columns. Let's now count up the average number of observations per year, to see how much data might be missing.
 
 ```{r}
 dfinal %>% 
@@ -88,7 +87,7 @@ ggplot(dfinal, aes(x = Date, y = Measurement, color = Site)) +
                 limits = c(1,NA), 
                 breaks = c(1, 5, 10, 15)) +
   scale_x_date(name = "Year",
-               labels = date_format("%Y-%m-%d"),
+               labels = date_format("%Y-%m"),
                limits = c(as.Date('2007-01-01'),NA),
                breaks = date_breaks("1 year"))
 
@@ -105,10 +104,13 @@ ggplot(dfinal, aes(x = Date, y = Measurement, color = Site)) +
   geom_smooth(method = 'loess') +
   labs(title = "Smoothed PM2.5 in SLC from 1999 - 2017") +
   scale_colour_manual(values = c("black", "red")) +
-  scale_y_log10(name = "PM2.5 µg/m3", 
-                breaks = c(2, 5, 6, 8, 10, 12, 15)) +
-  scale_x_date(name = "Year", 
-               labels = date_format("%Y-%m-%d"), 
+  scale_y_continuous(name = "PM2.5 µg/m3",
+                     breaks = c(6, 8, 10, 12, 14)) +
+  scale_x_date(name = "Year",
+               limits = c(as.Date('1999-01-01'),
+                          as.Date('2017-12-01'),
+                          expand),
+               labels = date_format("%Y"), 
                breaks = date_breaks("1 year"))
 
 ```
@@ -120,15 +122,15 @@ ggplot(dfinal, aes(x = Date, y = Measurement, color = Site)) +
   geom_smooth(method = 'loess') +
   labs(title = "Smoothed PM2.5 in SLC from 2008 - 2017") +
   scale_colour_manual(values = c("black", "red")) +
-  scale_y_log10(name = "PM2.5 µg/m3", 
-                breaks = c(2, 5, 6, 8, 10, 12, 15)) +
-  scale_x_date(name = "Year", 
-               limits = c(as.Date('2008-01-01'),NA),
-               labels = date_format("%Y-%m-%d"), 
-               breaks = date_breaks("1 year"))
+  scale_y_continuous(name = "PM2.5 µg/m3",
+                     breaks = c(6, 8, 10, 12, 14)) +
+  scale_x_date(name = "Year",
+               labels = date_format("%Y-%m"), 
+               breaks = date_breaks("1 year")) +
+  coord_cartesian(xlim=c(as.Date('2008-01-01'), # zooming w/o affecting smoother
+                         as.Date('2017-12-01')), 
+                  expand = FALSE)
 ```
-
-
 
 Over much of the last six years there's been a difference of ~1 ug/m3. While that level of background difference doesn't seem like much, this smoothing likely hides shorter-term spikes; what's scary is even differences in low-level PM2.5 exposure [can lead to adverse health effects](http://www.nejm.org/doi/full/10.1056/NEJMoa1702747). 
 
@@ -186,4 +188,4 @@ First, note how similar the patterns are between Rose Park and Hawthorne for a g
 
 Overall, at Hawthorne Elementary (which has [the most accurate](http://home.chpc.utah.edu/~whiteman/PM2.5/PM2.5.html#current_conc) measurements in the Salt Lake Valley), it's pretty clear that at least the last two winters have had the lowest PM2.5 levels of the last 10 years. Rose Park confirms this. While a couple of relatively pollution-free winters _could_ be due to meteorgological conditions (i.e., fewer high-pressure ridges), the fact that this decline in PM2.5 in the Salt Lake Valley is corroborated by the longer term trends shown above.
 
-What does this mean for policy advocacy in Utah? This downward trend _is_ encourgaging and, when accompanied with the fact that Salt Lake County is still an [serious EPA PM2.5 non-attainment area](https://deq.utah.gov/Pollutants/P/pm/pm25/serious-area-state-implementation-plans/index.htm), it gives us reason to believe that brave policy changes can get SLC to the point where it's safe to go outside every winter day. Doesn't seem to ambitious, right?
+**What does this mean for policy advocacy in Utah?** This downward trend _is_ encourgaging and, when accompanied with the fact that Salt Lake County is still an [serious EPA PM2.5 non-attainment area](https://deq.utah.gov/Pollutants/P/pm/pm25/serious-area-state-implementation-plans/index.htm), it gives us reason to believe that brave policy changes can get SLC to the point where it's safe to go outside every winter day. Doesn't seem too ambitious, right?
