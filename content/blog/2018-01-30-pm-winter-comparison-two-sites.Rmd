@@ -1,7 +1,7 @@
 ---
-title: "SLC year-over-year winter pollution comparisons using multiple sites"
+title: "SLC year-over-year winter pollution comparisons"
 draft: yes
-date: '2018-01-11'
+date: '2018-01-30'
 showpagemeta: yes
 excerpt: Wow, the winters are getting better?
 ---
