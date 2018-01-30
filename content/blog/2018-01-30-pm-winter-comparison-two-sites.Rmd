@@ -15,11 +15,11 @@ knitr::opts_chunk$set(cache = TRUE, warning = FALSE, message = FALSE,
 
 ## Background
 
-SLC is famous for its winter air pollution (specifically PM2.5). We want to nail down if it's getting better. In our last post we looked at hourly measurements from Hawthorne Elementary in SLC proper. The trend was encouragingly downward! But, that post only looked at one site and didn't focus on the winter (when the problem is at its worst).
+SLC is famous for its winter air pollution (specifically PM2.5). We want to nail down if it's getting better. In our [last post](https://www.levithatcher.com/blog/2018-01-11-inversion-basics-5years/) we looked at hourly measurements from Hawthorne Elementary in SLC proper. The trend was encouragingly downward! But, that post only looked at one site and didn't focus on the winter (when the problem is at its worst).
 
-## The Plan
+## The plan
 
-Let's look at 2007-2017 **daily** data to compare Rose Park (49-035-3010) and Hawthorne Elementary (49-035-3006), both of which are in SLC proper and X miles apart as the crow flies. We'll work up to a winter by winter comparison over the last ten years.
+Let's look at 2007-2017 **daily** data to compare Rose Park (EPA site 49-035-3010) and Hawthorne Elementary (site 49-035-3006), both of which are in SLC proper and 5.2 miles apart as the crow flies. We'll work up to a winter by winter comparison over the last ten years.
 
 ## Get the data
 
@@ -27,12 +27,12 @@ We download the data from [here](https://aqs.epa.gov/api) and again use these pa
 
 <img src="figs/2017-01-11-inversion-basics/data_download_parameters.png" width="99%">
 
-Let's read the flat files into R and combine.
+Let's read the two flat files into R and combine.
 
-```{r, include=FALSE}
+```{r}
 library(tidyverse)
-# While I could have batched this into one file, I didn't want
-# to mask how the original data looked coming from EPA website (reproducibility!)
+# While I could have combined this into one file, I didn't want to mask
+# how the original .txt data looked coming from EPA website (reproducibility!)
 dfH <- read_csv('../data/SLCPM2_5/SLCHawthorne_PM2.5_Daily_1999-2017.csv')
 dfRP <- read_csv('../data/SLCPM2_5/SLCRosePark_PM2.5_Daily_2007-2017.csv')
 
@@ -43,7 +43,7 @@ df <- dplyr::bind_rows(dfH, dfRP)
 
 ### Summarize and check the data
 
-For brevity, we've loaded in our data and now we'll grab data from the most robust Hawthorne sensor and only grab only the columns necessary.
+For brevity, we've loaded in our data and now we'll grab data from the most robust Hawthorne sensor and select only the helpful columns.
 
 ```{r}
 dfinal <- df %>% 
@@ -93,11 +93,11 @@ ggplot(dfinal, aes(x = Date, y = Measurement, color = Site)) +
 
 ```
 
-While some missing data, it indeed _looks_ like there is fairly good agreement between the Hawthorne and Rose Park daily PM2.5 values from 2007-2017. And it indeed appears that for both sites winter air quality has generally been improving (more to come below).
+While some missing data, it indeed _looks_ like there is fairly good agreement between the Hawthorne and Rose Park daily PM2.5 values from 2007-2017. And it indeed appears that for both sites winter air quality has generally been improving.
 
 ### Differences after [loess smoothing](https://en.wikipedia.org/wiki/Local_regression)
 
-Even though Hawthorne and Rose Park both move together, how to they differ? To check longer-term differences, let's plot with a `loess` smoother (which is built into `ggplot2`). Here we'll use 
+Even though Hawthorne and Rose Park mostly track together, how to they differ overall? To check longer-term differences, let's plot with a `loess` smoother (which is built into `ggplot2`). 
 
 ```{r}
 ggplot(dfinal, aes(x = Date, y = Measurement, color = Site)) +
@@ -126,22 +126,21 @@ ggplot(dfinal, aes(x = Date, y = Measurement, color = Site)) +
   scale_x_date(name = "Year-Month",
                labels = date_format("%Y-%m"), 
                breaks = date_breaks("1 year")) +
-  coord_cartesian(xlim=c(as.Date('2008-01-01'), # zooming w/o affecting smoother
+  # Zooming w/o affecting smoother
+  coord_cartesian(xlim=c(as.Date('2008-01-01'),
                          as.Date('2017-12-01')), 
                   expand = FALSE)
 ```
 
-Over much of the last six years there's been a difference of ~1 ug/m3. While that level of background difference doesn't seem like much, this smoothing likely hides shorter-term spikes; what's scary is even differences in low-level PM2.5 exposure [can lead to adverse health effects](http://www.nejm.org/doi/full/10.1056/NEJMoa1702747). 
+Over much of the last six years there's been a difference of ~1 µg/m3 between the sites. While that level of background difference doesn't seem like much, this smoothing likely hides shorter-term spikes; what's scary is even differences in low-level PM2.5 exposure [can lead to adverse health effects](http://www.nejm.org/doi/full/10.1056/NEJMoa1702747). 
 
-While this isn't confirmed, the heightened PM2.5 levels in Rose Park _could_ be due to proximity to the local refinery, which is just 1.5 miles east of the air quality measurement site (although the convergence from 2009-2011 is lost on me).
+While this is speculation, the heightened PM2.5 levels in Rose Park _could_ be due to proximity to the local refinery, which is just 1.5 miles east of the air quality measurement site (although it's totally lost on me why the difference is exacerbated in 2012).
 
 ![](../figs/temp/map.png)
 
-Not enough data to make a solid conclusion, however. Can look more in future!
-
 ### Winter comparisons for both sites
 
-Now, let's make the year-over-year *winter* comparison crystal clear. First for Hawthorne. Note that because we're only comparing winters, we need a winter column that allows us to use faceting in ggplot2 (thanks to [Mike Levy](https://twitter.com/ucdlevy) for the seasonal support here).
+Now, let's make the year-over-year *winter* comparison crystal clear. Note that because we're only comparing winters, we need a winter column that allows us to use [faceting](http://ggplot2.tidyverse.org/reference/facet_grid.html) in ggplot2. (Thanks to [Mike Levy](https://twitter.com/ucdlevy) for the seasonal support here.)
 
 ```{r}
 dividers <- as.Date(paste0(2007:2017, "06", "01"), format = "%Y%m%d")
@@ -154,7 +153,7 @@ dfinal <- dfinal %>%
          Month = lubridate::month(Date)) %>% 
   filter(Date > as.Date('2006-06-01'),   
          Month %in% c(1,2,11,12), # Only care about winter months
-         !is.na(Season))          # This avoids an NA facet plot
+         !is.na(Season))          # This avoids an NA facet panel
 ```
 
 And now we plot PM2.5 levels for five winters at Hawthorne and Rose Park.
@@ -180,16 +179,21 @@ ggplot(dfinal, aes(x = Date, y = Measurement)) +
   scale_x_date(name = "Winter Month",
                labels = date_format("%m"),
                breaks = date_breaks("1 month")) +
-  coord_cartesian(ylim = c(3,40)) + # zooming w/o affecting smoother
+  # Zooming w/o affecting smoother
+  coord_cartesian(ylim = c(3,40)) +
   facet_grid(Site ~ Season, 
              scale = "free", 
              labeller = labeller(Season = as_labeller(season_names)))
 ```
 
-First, note how similar the patterns are between Rose Park and Hawthorne for a given year--it's heartening to see the signal is roughly what we'd expect. There is some missing data, however, which is why there's so much gray in Hawthorne for 2014-15.
+First, note how similar the patterns are between Rose Park and Hawthorne for a given winter--it's heartening to see the signal is roughly what we'd expect. There is some missing data, however, which is why there's so much gray in Hawthorne for 2014-15.
 
 ## Conclusion
 
-Overall, for Hawthorne Elementary (which has [the most accurate](http://home.chpc.utah.edu/~whiteman/PM2.5/PM2.5.html#current_conc) measurements in the Salt Lake Valley), it's pretty clear that at least the last two winters have had the lowest PM2.5 levels of the last 10 years. Rose Park confirms this. While a couple of relatively pollution-free winters _could_ be due to meteorgological conditions (i.e., fewer high-pressure ridges), the fact that this decline in PM2.5 in the Salt Lake Valley is corroborated by the longer term trends shown above.
+Overall, for Hawthorne Elementary (which has [the most accurate](http://home.chpc.utah.edu/~whiteman/PM2.5/PM2.5.html#current_conc) measurements in the Salt Lake Valley), it's pretty clear that at least the last two winters have had nearly the lowest PM2.5 levels of the last 10 years. Note that winter 2010-2011 had remarkable air as well. Rose Park confirms this. 
 
-**What does this mean for policy advocacy in Utah?** This downward trend _is_ encourgaging and, when accompanied with the fact that Salt Lake County is still an [serious EPA PM2.5 non-attainment area](https://deq.utah.gov/Pollutants/P/pm/pm25/serious-area-state-implementation-plans/index.htm), it gives us reason to believe that brave policy changes can get SLC to the point where it's safe to go outside every winter day. Doesn't seem too ambitious, right?
+While a couple of relatively pollution-free winters _could_ be due to meteorgological conditions (i.e., fewer high-pressure ridges), the fact that this decline in PM2.5 in the Salt Lake Valley is corroborated by the longer term trends shown above gives me confidence that this is a true decline in background pollution.
+
+**What does this mean for policy advocacy in Utah?** This downward trend _is_ encourgaging and, when combined with the fact that Salt Lake County is _still_ an [serious EPA PM2.5 non-attainment area](https://deq.utah.gov/Pollutants/P/pm/pm25/serious-area-state-implementation-plans/index.htm), it gives us reason to believe that brave policy changes can eventually make SLC safe enough for all folks to go outside every winter day. Doesn't seem too ambitious, right? 
+
+_**Note, see [here](https://le.utah.gov) to track the 2018 Utah Legislative session.**_
