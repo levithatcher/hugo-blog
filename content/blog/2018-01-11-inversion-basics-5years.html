@@ -16,7 +16,7 @@ showpagemeta: true
 <section id="get-the-data" class="level2">
 <h2>Get the data</h2>
 <p>The data we’ll be using for the analysis comes from the <a href="https://deq.utah.gov/Divisions/daq/index.htm">UDAQ</a> via the EPA, which keeps detailed air quality data for various sites in SL County. This post will grab data from Hawthorne Elementary (site 490353006) in SLC proper, as that site is noted as being the <a href="http://home.chpc.utah.edu/~whiteman/PM2.5/PM2.5.html#current_conc">most accurate</a> in the valley (and is <a href="http://home.chpc.utah.edu/~whiteman/PM2.5/PM2.5.html#current_conc">actually the site used</a> to determine whether the valley meets EPA standards).</p>
-<p>We’ll pull 2013-2017 hourly data from <a href="https://aqs.epa.gov/api">here</a> (you’ll have to register) with these parameters:</p>
+<p>The hourly data for Hawthorne Elementary only goes back to 2013, so we’ll pull the entire dataset from <a href="https://aqs.epa.gov/api">here</a> (you’ll have to register) with these parameters:</p>
 <p><img src="figs/2017-01-11-inversion-basics/data_download_parameters.png" width="99%"></p>
 </section>
 <section id="analysis" class="level2">
@@ -25,7 +25,7 @@ showpagemeta: true
 <section id="load-in-the-data" class="level3">
 <h3>Load in the data</h3>
 <pre class="r"><code>library(tidyverse)
-df &lt;- read_csv(&#39;../data/SLCHawthornePM2-5_2013-2017.csv&#39;)
+df &lt;- read_csv(&#39;../data/SLCPM2_5/SLCHawthorne_PM2.5_Hourly_2013-2017.csv&#39;)
 
 # Look at the data
 print(df, n = 5)</code></pre>
@@ -45,6 +45,7 @@ print(df, n = 5)</code></pre>
 ## #   Description` &lt;chr&gt;, `Method Type` &lt;chr&gt;, `Method Description` &lt;chr&gt;</code></pre>
 <p>Around 60k observations for the five year period and lots of columns we don’t need. Let’s simplify this dataset and look again.</p>
 <pre class="r"><code># Convert date and time columns into one column
+# TODO: Convert this to dplyr syntax
 df$DateTime &lt;- as.POSIXct(paste(df$`Date Local`, df$`24 Hour Local`), 
                           format=&quot;%Y-%m-%d %H:%M&quot;)
 
