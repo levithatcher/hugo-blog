@@ -86,7 +86,7 @@ ggplot(dfinal, aes(x = Date, y = Measurement, color = Site)) +
   scale_y_log10(name = "PM2.5 µg/m3", 
                 limits = c(1,NA), 
                 breaks = c(1, 5, 10, 15)) +
-  scale_x_date(name = "Year",
+  scale_x_date(name = "Year-Month",
                labels = date_format("%Y-%m"),
                limits = c(as.Date('2007-01-01'),NA),
                breaks = date_breaks("1 year"))
@@ -105,11 +105,10 @@ ggplot(dfinal, aes(x = Date, y = Measurement, color = Site)) +
   labs(title = "Smoothed PM2.5 in SLC from 1999 - 2017") +
   scale_colour_manual(values = c("black", "red")) +
   scale_y_continuous(name = "PM2.5 µg/m3",
-                     breaks = c(6, 8, 10, 12, 14)) +
+                     breaks = c(6, 8, 10, 12)) +
   scale_x_date(name = "Year",
                limits = c(as.Date('1999-01-01'),
-                          as.Date('2017-12-01'),
-                          expand),
+                          as.Date('2017-12-01')),
                labels = date_format("%Y"), 
                breaks = date_breaks("1 year"))
 
@@ -123,8 +122,8 @@ ggplot(dfinal, aes(x = Date, y = Measurement, color = Site)) +
   labs(title = "Smoothed PM2.5 in SLC from 2008 - 2017") +
   scale_colour_manual(values = c("black", "red")) +
   scale_y_continuous(name = "PM2.5 µg/m3",
-                     breaks = c(6, 8, 10, 12, 14)) +
-  scale_x_date(name = "Year",
+                     breaks = c(8, 10, 12)) +
+  scale_x_date(name = "Year-Month",
                labels = date_format("%Y-%m"), 
                breaks = date_breaks("1 year")) +
   coord_cartesian(xlim=c(as.Date('2008-01-01'), # zooming w/o affecting smoother
@@ -148,7 +147,8 @@ Now, let's make the year-over-year *winter* comparison crystal clear. First for 
 dividers <- as.Date(paste0(2007:2017, "06", "01"), format = "%Y%m%d")
 
 dfinal <- dfinal %>%
-  mutate(Season = cut(as.numeric(Date), as.numeric(dividers), 
+  mutate(Season = cut(as.numeric(Date), 
+                      as.numeric(dividers), 
                       include.lowest = TRUE),
          Season = as.numeric(Season),
          Month = lubridate::month(Date)) %>% 
@@ -176,16 +176,20 @@ season_names <- c(
 ggplot(dfinal, aes(x = Date, y = Measurement)) + 
   geom_smooth(method = "loess") +
   scale_y_log10(name = "PM2.5 µg/m3",
-                limits = c(2,NA), 
-                breaks = c(2, 5, 7, 10, 15, 20, 30, 40, 50)) +
+                breaks = c(3, 5, 7, 10, 15, 20, 30, 40, 50)) +
   scale_x_date(name = "Winter Month",
                labels = date_format("%m"),
                breaks = date_breaks("1 month")) +
-  facet_grid(Site ~ Season, scale = "free", labeller = labeller(Season = as_labeller(season_names)))
+  coord_cartesian(ylim = c(3,40)) + # zooming w/o affecting smoother
+  facet_grid(Site ~ Season, 
+             scale = "free", 
+             labeller = labeller(Season = as_labeller(season_names)))
 ```
 
 First, note how similar the patterns are between Rose Park and Hawthorne for a given year--it's heartening to see the signal is roughly what we'd expect. There is some missing data, however, which is why there's so much gray in Hawthorne for 2014-15.
 
-Overall, at Hawthorne Elementary (which has [the most accurate](http://home.chpc.utah.edu/~whiteman/PM2.5/PM2.5.html#current_conc) measurements in the Salt Lake Valley), it's pretty clear that at least the last two winters have had the lowest PM2.5 levels of the last 10 years. Rose Park confirms this. While a couple of relatively pollution-free winters _could_ be due to meteorgological conditions (i.e., fewer high-pressure ridges), the fact that this decline in PM2.5 in the Salt Lake Valley is corroborated by the longer term trends shown above.
+## Conclusion
+
+Overall, for Hawthorne Elementary (which has [the most accurate](http://home.chpc.utah.edu/~whiteman/PM2.5/PM2.5.html#current_conc) measurements in the Salt Lake Valley), it's pretty clear that at least the last two winters have had the lowest PM2.5 levels of the last 10 years. Rose Park confirms this. While a couple of relatively pollution-free winters _could_ be due to meteorgological conditions (i.e., fewer high-pressure ridges), the fact that this decline in PM2.5 in the Salt Lake Valley is corroborated by the longer term trends shown above.
 
 **What does this mean for policy advocacy in Utah?** This downward trend _is_ encourgaging and, when accompanied with the fact that Salt Lake County is still an [serious EPA PM2.5 non-attainment area](https://deq.utah.gov/Pollutants/P/pm/pm25/serious-area-state-implementation-plans/index.htm), it gives us reason to believe that brave policy changes can get SLC to the point where it's safe to go outside every winter day. Doesn't seem too ambitious, right?
