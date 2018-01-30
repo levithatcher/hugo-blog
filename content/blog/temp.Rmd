@@ -113,7 +113,24 @@ ggplot(dfinal, aes(x = Date, y = Measurement, color = Site)) +
 
 ```
 
-**Overall**, outside of a spike in 2011-2012, note the downward trend. Interestingly Rose Park PM2.5 levels are typically higher than those at Hawthorne Elementary (which is in the Liberty Wells neighborhood). Over the last six years there's been a difference of ~1 ug/m3. While that level of background difference doesn't seem like much, this smoothing likely hides shorter-term spikes; what's scary is even differences in low-level PM2.5 exposure [can lead to adverse health effects](http://www.nejm.org/doi/full/10.1056/NEJMoa1702747). 
+**Overall**, note the downward Hawthorne trend since ~2004! Interestingly Rose Park PM2.5 levels are typically higher than those at Hawthorne Elementary (which is in the Liberty Wells neighborhood). Let's zoom a bit, since Rose Park data starts so much later.
+
+```{r}
+ggplot(dfinal, aes(x = Date, y = Measurement, color = Site)) +
+  geom_smooth(method = 'loess') +
+  labs(title = "Smoothed PM2.5 in SLC from 2008 - 2017") +
+  scale_colour_manual(values = c("black", "red")) +
+  scale_y_log10(name = "PM2.5 µg/m3", 
+                breaks = c(2, 5, 6, 8, 10, 12, 15)) +
+  scale_x_date(name = "Year", 
+               limits = c(as.Date('2008-01-01'),NA),
+               labels = date_format("%Y-%m-%d"), 
+               breaks = date_breaks("1 year"))
+```
+
+
+
+Over much of the last six years there's been a difference of ~1 ug/m3. While that level of background difference doesn't seem like much, this smoothing likely hides shorter-term spikes; what's scary is even differences in low-level PM2.5 exposure [can lead to adverse health effects](http://www.nejm.org/doi/full/10.1056/NEJMoa1702747). 
 
 While this isn't confirmed, the heightened PM2.5 levels in Rose Park _could_ be due to proximity to the local refinery, which is just 1.5 miles east of the air quality measurement site (although the convergence from 2009-2011 is lost on me).
 
@@ -167,4 +184,6 @@ ggplot(dfinal, aes(x = Date, y = Measurement)) +
 
 First, note how similar the patterns are between Rose Park and Hawthorne for a given year--it's heartening to see the signal is roughly what we'd expect. There is some missing data, however, which is why there's so much gray in Hawthorne for 2014-15.
 
-Overall, at Hawthorne Elementary (which has [the most accurate](http://home.chpc.utah.edu/~whiteman/PM2.5/PM2.5.html#current_conc) measurements in the Salt Lake Valley), it's pretty clear that the last three winters have had the lowest PM2.5 levels of the last 10 years. 
+Overall, at Hawthorne Elementary (which has [the most accurate](http://home.chpc.utah.edu/~whiteman/PM2.5/PM2.5.html#current_conc) measurements in the Salt Lake Valley), it's pretty clear that at least the last two winters have had the lowest PM2.5 levels of the last 10 years. Rose Park confirms this. While a couple of relatively pollution-free winters _could_ be due to meteorgological conditions (i.e., fewer high-pressure ridges), the fact that this decline in PM2.5 in the Salt Lake Valley is corroborated by the longer term trends shown above.
+
+What does this mean for policy advocacy in Utah? This downward trend _is_ encourgaging and, when accompanied with the fact that Salt Lake County is still an [serious EPA PM2.5 non-attainment area](https://deq.utah.gov/Pollutants/P/pm/pm25/serious-area-state-implementation-plans/index.htm), it gives us reason to believe that brave policy changes can get SLC to the point where it's safe to go outside every winter day. Doesn't seem to ambitious, right?
