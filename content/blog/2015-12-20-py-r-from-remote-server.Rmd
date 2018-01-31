@@ -1,0 +1,36 @@
+---
+output:
+  html_document:
+    highlight: pygments
+comments: false
+date: "2015-12-20"
+draft: false
+showpagemeta: true
+slug: "rscript-remote-win-server"
+title: "Running a Python or R script from a remote windows server"
+---
+
+## Background
+
+Continuing with the (underexplained) infrastructure side of data science, in this post I’ll detail how to call a Python or R script remotely. For example, say you have a Python or R exe and the associated scripts on one server, while you want to call them from a PowerShell (.ps1) script on another server. How does this work? Via PowerShell’s `Invoke-Command` and its associated `WinRM` framework (which has supplanted the older `RCP` standard).
+
+## Steps
+
+1) Call a PowerShell script on your local machine that we’ll name `First.ps1` and which resides on the Desktop. It looks something like this:
+
+```{r, engine = 'PowerShell', eval = FALSE}
+cd 'C:\Users\levi.thatcher\Desktop\'
+Invoke‐Command ‐ComputerName remotebox ‐FilePath .\Remote.ps1
+```
+
+2) This calls the `Remote.ps1` file (that is on the same machine and in the same directory as `First.ps1`). `Remote.ps1` contains the commands that are sent to the remote box (called `remotebox` above):
+
+```{r, engine = 'PowerShell', eval = FALSE}
+&$python = 'C:\Python27\python.exe'
+$script = 'C:\Users\levi.thatcher\Desktop\test.py'
+& $python $script
+```
+
+So one script calls the `Invoke-Command` and the other executes the Python (or R). Fairly simple. The only thing to watch out for is that the user executing the PowerShell (on the first box) has to have execute permission on the Python/R exe’s on the second box. And, as always, please let us know how to make this simpler!
+
+*Note: this doesn't work when running the first PowerShell script as a SQL Agent job.*
