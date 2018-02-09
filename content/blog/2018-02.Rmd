@@ -12,7 +12,7 @@ For those folks that have spent most of their lives in SLC, they might have noti
 
 ```{r}
 library(tidyverse)
-d <- read_csv('../data/SLC_Min_Temp_1988-2007.csv')
+d <- read_csv('../data/SLC_Min_Temp_1948-2007.csv')
 
 # Look at the data
 head(d)
@@ -35,26 +35,65 @@ d %>%
 
 Looks like the Triad Center site, which is in the CBD of SLC, had some serious collection issues in the early 2000s (such that entire years are missing). Let's proceed on with data from the SLC Airport and Cottonwood Weir, since they're populated fairly faithfully.
 
+## Prep the data
+
 ```{r}
-d <- d %>% 
+d <- d %>%
   filter(NAME != 'SALT LAKE TRIAD CENTER, UT US') %>% 
-  # Rename the sites for readability
+  # Rename the sites and NAME column for readability
   mutate(NAME = ifelse(NAME == 'SALT LAKE CITY INTERNATIONAL AIRPORT, UT US',
                        'SLC Intl',
-                       'Cottonwood Weir'))
+                       'Cedar Mtns')) %>% 
+  rename(SITE = NAME)
+
+# Since loess is compute-intensive, make separate tibble
+d_small <- d %>% 
+  filter(year(DATE) > 1987)
 ```
 
 
 ## Explore the data
 
-Let's first look at the smoothed average over the entire period.
-
-
+Let's first look at the smoothed average over the last 30 years.
 
 ```{r}
-ggplot(d, aes(x = DATE, y = TMIN, color = NAME)) +
+library(scales)
+ggplot(d_small, aes(x = DATE, y = TMIN, color = SITE)) +
   geom_point() +
-  geom_smooth(method = 'loess')
+  geom_smooth(method = 'loess') +
+  labs(title = 'SLC area daily min temperature from 1988-2017') +
+  scale_x_date(name = "Year",
+               labels = date_format("%Y")) +
+  scale_y_continuous(name = "Minimium temperature",
+                     breaks = c(-20,-10,0,10,20,30,40,50,60,70,80),
+                     limits = c(-25,85))
 ```
 
-By and large this is what we'd expect for SLC-area lows--summertime lows only occasionally get into the 70s and winter lows only rarely get below zero. The trend is upward, albeit just slightly and definitely not monotonic.
+By and large this is what we'd expect for SLC-area lows--summertime lows only occasionally get into the 70s and winter lows only rarely get below zero. Hard to identify a persistent trend, however; especially with the strong seasonality. Now I'm curious--I'm going to grab a longer time seris for SLC Intl and plot.
+
+Note that I'll use a linear smoother here (instead of loess) since in a longer time series we're naturally less curious about short-term variation.
+
+```{r}
+
+d %>% 
+  filter(SITE == 'SLC Intl') %>%
+ggplot(., aes(x = DATE, y = TMIN)) +
+  geom_point() +
+  geom_smooth(method = 'lm') +
+  labs(title = 'SLC Intl daily min temperature from 1948-2017') +
+  scale_x_date(name = "Year",
+               labels = date_format("%Y")) +
+  scale_y_continuous(name = "Minimium temperature",
+                     breaks = c(-20,-10,0,10,20,30,40,50,60,70,80),
+                     limits = c(-25,85))
+
+```
+
+This is over-plotted, but it's not difficult to see that the trend line goes from ~43°F to ~44°F, which is roughly aligned with the [global temperature rise of 1.69°F since 1880](https://www.climate.gov/news-features/understanding-climate/climate-change-global-temperature). It's easier to pick out the change when looking at the extreme cold days become less frequent for SLC Intl and extreme warm days becoming more frequent for Cottonwood.
+
+## Putting rigor into trend confirmation
+
+Now that we've plotted the data and it roughly looks correct, let's use stats to get at whether the trend is significant over the long haul and then over shorter time frames.
+
+
+
