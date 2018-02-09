@@ -1,0 +1,63 @@
+---
+title: "Studying SLC climate change via resampling techniques"
+excerpt: "How has the winter changed in our lifetime?"
+date: '2018-02-09'
+---
+
+## Background
+
+For those folks that have spent most of their lives in SLC, they might have noticed that snow used to stay on the ground all winter, but now is gone within a few days of a storm. You hear folks mention this occasionally in conversation. Let's get some data to check out what's actually happened.
+
+## Grab the data
+
+```{r}
+library(tidyverse)
+d <- read_csv('../data/SLC_Min_Temp_1988-2007.csv')
+
+# Look at the data
+head(d)
+```
+
+Nice, so the data is in a tidy format, which here means that multiple sites are handled under the NAME column. This means that if we grabbed data from more sites in the future, our processes here would be reproducible without modifications.
+
+## Check what's missing
+
+Let's check on how much of the daily data is missing.
+
+```{r}
+library(lubridate)
+d %>%
+  mutate(Year = year(DATE)) %>% 
+  filter(Year > 2000 & Year < 2005) %>% 
+  group_by(Year, NAME) %>% 
+  summarize(Count = n())
+```
+
+Looks like the Triad Center site, which is in the CBD of SLC, had some serious collection issues in the early 2000s (such that entire years are missing). Let's proceed on with data from the SLC Airport and Cottonwood Weir, since they're populated fairly faithfully.
+
+```{r}
+d <- d %>% 
+  filter(NAME != 'SALT LAKE TRIAD CENTER, UT US') %>% 
+  # Rename the sites for readability
+  mutate(NAME = ifelse(NAME == 'SALT LAKE CITY INTERNATIONAL AIRPORT, UT US',
+                       'SLC Intl',
+                       'Cottonwood Weir'))
+```
+
+
+## Explore the data
+
+Let's first look at the smoothed average over the entire period.
+
+
+
+```{r}
+ggplot(d, aes(x = DATE, y = TMIN, color = NAME)) +
+  geom_point()
+
+
+```
+
+Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Cmd+Option+I*.
+
+When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Cmd+Shift+K* to preview the HTML file).
