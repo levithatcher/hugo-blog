@@ -8,6 +8,8 @@ date: '2018-02-09'
 
 For those folks that have spent most of their lives in SLC, they might have noticed that snow used to stay on the ground all winter, but now is gone within a few days of a storm. You hear folks mention this occasionally in conversation. Let's get some data to check out what's actually happened.
 
+We'll pull data (via [NOAA](https://www.ncdc.noaa.gov/cdo-web/datatools/findstation) from both urban and remote sites in the vicinity of SLC.
+
 ## Grab the data
 
 ```{r}
@@ -20,7 +22,9 @@ head(d)
 
 Nice, so the data is in a tidy format, which here means that multiple sites are handled under the NAME column. This means that if we grabbed data from more sites in the future, our processes here would be reproducible without modifications.
 
-## Check what's missing
+## Initial analysis
+
+### Check what's missing
 
 Let's check on how much of the daily data is missing.
 
@@ -33,9 +37,9 @@ d %>%
   summarize(Count = n())
 ```
 
-Looks like the Triad Center site, which is in the CBD of SLC, had some serious collection issues in the early 2000s (such that entire years are missing). Let's proceed on with data from the SLC Airport and Cottonwood Weir, since they're populated fairly faithfully.
+Looks like the Triad Center site, which is in the [CBD](https://en.wikipedia.org/wiki/Central_business_district) of SLC, had some serious collection issues in the early 2000s (such that entire years are missing). Let's proceed on with data from the SLC Airport and the Cedar Mountains, since they're populated fairly faithfully. Note that the Cedar Mountains site is at lat/lon 40.3008/-112.7764 and as the crow flies is 55 miles southwest SLC's [CBD](https://en.wikipedia.org/wiki/Central_business_district).
 
-## Prep the data
+### Prep the data
 
 ```{r}
 d <- d %>%
@@ -45,21 +49,20 @@ d <- d %>%
                        'SLC Intl',
                        'Cedar Mtns')) %>% 
   rename(SITE = NAME)
-
-# Since loess is compute-intensive, make separate tibble
-d_small <- d %>% 
-  filter(year(DATE) > 1987)
 ```
 
 
-## Explore the data
+### Explore the data
 
 Let's first look at the smoothed average over the last 30 years.
 
 ```{r}
 library(scales)
-ggplot(d_small, aes(x = DATE, y = TMIN, color = SITE)) +
-  geom_point() +
+
+d %>% 
+  filter(year(DATE) > 1987) %>% 
+ggplot(., aes(x = DATE, y = TMIN, color = SITE)) +
+  geom_point(alpha = 0.1) +
   geom_smooth(method = 'loess') +
   labs(title = 'SLC area daily min temperature from 1988-2017') +
   scale_x_date(name = "Year",
@@ -69,7 +72,9 @@ ggplot(d_small, aes(x = DATE, y = TMIN, color = SITE)) +
                      limits = c(-25,85))
 ```
 
-By and large this is what we'd expect for SLC-area lows--summertime lows only occasionally get into the 70s and winter lows only rarely get below zero. Hard to identify a persistent trend, however; especially with the strong seasonality. Now I'm curious--I'm going to grab a longer time seris for SLC Intl and plot.
+By and large this is what we'd expect for SLC-area lows--summertime lows only occasionally get into the 70s and winter lows only rarely get below zero. This upward trend confirms what long-time residents have anecdotally expressed about a decrease in quasi-permanent winter ground snow.
+
+Note that SLC Intl has risen more than Cedar Mtns, but both show a noticeable increase in daily temperature minima over the last 30 years. For curiosity's sake, let's grab a longer time series for SLC Intl.
 
 Note that I'll use a linear smoother here (instead of loess) since in a longer time series we're naturally less curious about short-term variation.
 
@@ -78,7 +83,7 @@ Note that I'll use a linear smoother here (instead of loess) since in a longer t
 d %>% 
   filter(SITE == 'SLC Intl') %>%
 ggplot(., aes(x = DATE, y = TMIN)) +
-  geom_point() +
+  geom_point(alpha = 0.05) +
   geom_smooth(method = 'lm') +
   labs(title = 'SLC Intl daily min temperature from 1948-2017') +
   scale_x_date(name = "Year",
@@ -89,11 +94,12 @@ ggplot(., aes(x = DATE, y = TMIN)) +
 
 ```
 
-This is over-plotted, but it's not difficult to see that the trend line goes from ~43°F to ~44°F, which is roughly aligned with the [global temperature rise of 1.69°F since 1880](https://www.climate.gov/news-features/understanding-climate/climate-change-global-temperature). It's easier to pick out the change when looking at the extreme cold days become less frequent for SLC Intl and extreme warm days becoming more frequent for Cottonwood.
+This is over-plotted, but it's not difficult to see that the trend line goes from ~38°F to ~44°F, which is surprisingly high compared with the [global temperature rise of 1.69°F since 1880](https://www.climate.gov/news-features/understanding-climate/climate-change-global-temperature). Since SLC has seen a lot of urban growth over the last 70 years, a heat-island effect may be playing a part of this (which is why we grabbed data from the remote Cedar Mtns site). 
 
 ## Putting rigor into trend confirmation
 
-Now that we've plotted the data and it roughly looks correct, let's use stats to get at whether the trend is significant over the long haul and then over shorter time frames.
+Now that we've plotted the data and it roughly looks correct, let's use stats to get at whether the trend is significant over the long haul and then over shorter time frames. Note that this is intended as more of an exploration of resampling methods rather than a contribution to climate change research.
 
+### T-tests for trends?
 
 
