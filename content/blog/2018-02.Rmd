@@ -53,11 +53,8 @@ Let's first look at the smoothed average over the entire period.
 
 ```{r}
 ggplot(d, aes(x = DATE, y = TMIN, color = NAME)) +
-  geom_point()
-
-
+  geom_point() +
+  geom_smooth(method = 'loess')
 ```
 
-Add a new chunk by clicking the *Insert Chunk* button on the toolbar or by pressing *Cmd+Option+I*.
-
-When you save the notebook, an HTML file containing the code and output will be saved alongside it (click the *Preview* button or press *Cmd+Shift+K* to preview the HTML file).
+By and large this is what we'd expect for SLC-area lows--summertime lows only occasionally get into the 70s and winter lows only rarely get below zero. The trend is upward, albeit just slightly and definitely not monotonic.
