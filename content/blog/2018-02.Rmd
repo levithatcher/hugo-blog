@@ -48,7 +48,8 @@ d <- d %>%
   mutate(NAME = ifelse(NAME == 'SALT LAKE CITY INTERNATIONAL AIRPORT, UT US',
                        'SLC Intl',
                        'Cedar Mtns')) %>% 
-  rename(SITE = NAME)
+  rename(Site = NAME, Date = DATE, TMin = TMIN) %>% 
+  select(Site, Date, TMin)
 ```
 
 
@@ -60,8 +61,8 @@ Let's first look at the smoothed average over the last 30 years.
 library(scales)
 
 d %>% 
-  filter(year(DATE) > 1987) %>% 
-ggplot(., aes(x = DATE, y = TMIN, color = SITE)) +
+  filter(year(Date) > 1987) %>% 
+ggplot(., aes(x = Date, y = TMin, color = Site)) +
   geom_point(alpha = 0.1) +
   geom_smooth(method = 'loess') +
   labs(title = 'SLC area daily min temperature from 1988-2017') +
@@ -79,10 +80,9 @@ Note that SLC Intl has risen more than Cedar Mtns, but both show a noticeable in
 Note that I'll use a linear smoother here (instead of loess) since in a longer time series we're naturally less curious about short-term variation.
 
 ```{r}
-
 d %>% 
-  filter(SITE == 'SLC Intl') %>%
-ggplot(., aes(x = DATE, y = TMIN)) +
+  filter(Site == 'SLC Intl') %>%
+ggplot(., aes(x = Date, y = TMin)) +
   geom_point(alpha = 0.05) +
   geom_smooth(method = 'lm') +
   labs(title = 'SLC Intl daily min temperature from 1948-2017') +
@@ -100,6 +100,100 @@ This is over-plotted, but it's not difficult to see that the trend line goes fro
 
 Now that we've plotted the data and it roughly looks correct, let's use stats to get at whether the trend is significant over the long haul and then over shorter time frames. Note that this is intended as more of an exploration of resampling methods rather than a contribution to climate change research.
 
-### T-tests for trends?
+### Comparing average lows by decade?
+
+Let's now take the sum for each decade from 1950-2010 and see how they've changed. While we'd expect them to be quite close, plotting 95% confidence intervals around the points will help us get a sense of the certainty around each mean.
+
+First, we'll calculate the means per decade with a naive 95% confidence interval.
+
+```{r}
+d %>% 
+  filter(Site == 'SLC Intl') %>%
+  mutate(Decade = year(Date) - year(Date) %% 10) %>% 
+  group_by(Decade) %>% 
+  mutate(Mean = base::mean(TMin, na.rm = TRUE),
+         SD = stats::sd(TMin, na.rm = TRUE),
+         StdError = stats::sd(TMin, na.rm = TRUE) / n(),
+         CI = 1.96 * StdError) %>% 
+  
+  ggplot(., aes(x = Mean, y = Decade)) +
+    geom_point() +
+    geom_errorbarh(aes(xmin = Mean - CI, xmax = Mean + CI)) +
+    scale_y_continuous(breaks = c(1940, 1950, 1960, 1970, 1980, 1990, 2000, 2010)) +
+    
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+```{r}
+library(boot)
+
+# ts_fun <- function(vect) {
+#   mean(vect, na.rm = TRUE)
+# }
+# 
+# num_resamples <- 1000
+# block_length <- round(nrow(d)^(1/3))
+
+# manaus_fixed <- tsboot(manaus, manaus_fun, R = num_resamples, l = block_length, 
+#     sim = "fixed")
+
+# out <- boot:tsboot(ts(d$TMin),
+#                        ts_fun,
+#                        R = 1000,
+#                        l = block_length,
+#                        sim = "fixed")
+# 
+# tidy(out, conf.int = TRUE)
+
+
+# r <- d %>%
+#   mutate(Decade = year(Date) - year(Date) %% 10) %>% 
+#   #group_by(Decade) %>% 
+#   select(TMin) %>% 
+#   #do(meany = mean(.$TMin, na.rm = TRUE)) 
+#   do(compute_block_boot(.$TMin))
+
+  
+```
+
+
+# d_small <- d %>%
+#   # Create decade column using modulus (ie, remainders)
+#   mutate(Decade = year(Date) - year(Date) %% 10) %>% 
+#   group_by(Decade) %>%
+#   broom::bootstrap(10, by_group = TRUE) %>% 
+#   do(tidy(mean(TMin)))
+```
+
+```{r}
+# res <- d %>%
+#  mutate(Decade = year(Date) - year(Date) %% 10) %>%
+#  group_by(Decade) %>%
+#  select(TMin) %>%
+#  modelr::bootstrap(100) %>%
+#  mutate(sepal_mean = map_dbl(strap, ~mean(as_data_frame(.x)$TMin)))
+#res
+```
+
+
+```{r}
+# plot(out, index=1)
+# ggplot(data = out, aes(x = out$t[,1])) +
+#   geom_point()
+```
+
+
 
 
