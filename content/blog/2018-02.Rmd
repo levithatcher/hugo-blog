@@ -104,52 +104,58 @@ Now that we've plotted the data and it roughly looks correct, let's use stats to
 
 Let's now take the sum for each decade from 1950-2010 and see how they've changed. While we'd expect them to be quite close, plotting 95% confidence intervals around the points will help us get a sense of the certainty around each mean.
 
-First, we'll calculate the means per decade with a naive 95% confidence interval.
-
+Note that we calculate the means per decade with a naive 95% confidence interval. Can you catch what's naive about it?
 
 ```{r}
 d %>% 
-  filter(Site == 'SLC Intl' & year(Date) > 1949 & year(Date) < 1960) %>% 
-  mutate(Mean = base::mean(TMin, na.rm = TRUE),
-         SD = stats::sd(TMin, na.rm = TRUE),
-         Count = n(),
-         StdError = SD / n(),
-         CI = 1.96 * StdError)
-```
-
-Here's a naive view of average minimum temperature by decade. 
-
-```{r}
-dd <- d %>% 
   filter(Site == 'SLC Intl' & year(Date) > 1949) %>%
   mutate(Decade = year(Date) - (year(Date) %% 10)) %>% 
   group_by(Decade) %>%
   mutate(Mean = base::mean(TMin, na.rm = TRUE),
          SD = stats::sd(TMin, na.rm = TRUE),
          StdError = SD / sqrt(n()),
-         CI = 1.96 * StdError)
-```
-The error bars here are too small (hence the naivety) because of the auto-correlation in the dataset. Backing up a bit, since the temperature tomorrow is somewhat explained by the temperature yesterday, there's some auto-correlation that effectively reduces the degrees of freedom in the data. That means that things like standard errors and t-tests need to be adjusted (so that we don't mistakenly reject the null hypothesis).
+         CI = 1.96 * StdError) %>% 
 
-```{r}
-t <- acf(dd$TMin)
-t
-```
-
-
-```{r}  
-  ggplot(dd, aes(y = TMin, x = Decade)) +
+  ggplot(., aes(y = TMin, x = Decade)) +
     #geom_point() +
-    stat_summary(fun.data = mean_cl_normal, conf.int = 0.95, geom = "errorbar") +
+    #stat_summary(fun.data = mean_cl_normal, conf.int = 0.95, geom = "errorbar") +
     stat_summary(fun.y = mean, geom = "point") +
-    #geom_errorbar(aes(ymin = Mean - CI, ymax = Mean + CI, color = 'red')) +
+    geom_errorbar(aes(ymin = Mean - CI, ymax = Mean + CI)) +
     scale_x_continuous(breaks = c(1940, 1950, 1960, 1970, 1980, 1990, 2000, 2010)) +
     scale_y_continuous(breaks = c(36,37,38,39,40,41,42,43,44,45)) +
-    #scale_y_continuous(limits = c(33,40))
     coord_cartesian(ylim = c(36,45))
-    
-    
 ```
+The error bars here are too small (hence the naivety) because of the autocorrelation in the dataset. Backing up a bit, since the temperature tomorrow is somewhat explained by the temperature yesterday, there's some autocorrelation that effectively reduces the degrees of freedom in the data. That means that things like standard errors and t-tests need to be adjusted (so that we don't mistakenly reject the null hypothesis).
+
+### Adjusting error bars for autocorrelation
+
+A simple way to think about this, is that we need an adjustment factor for our standard error (since that's what confidence intervals are often based on). One can do that [via an autocorrelation coefficient](https://en.wikipedia.org/wiki/Standard_error#Correction_for_correlation_in_the_sample). But what's the easiest way to find that? If you had an AR(1) process (where you only had a one-step dependence in your data) then you could use the [Prais-Winsten estimate](https://en.wikipedia.org/wiki/Prais%E2%80%93Winsten_estimation). Since temperature data has much more of a memory, we need a different route.
+
+Note that to get at autocorrelation, one has to first remove the trend. We can do this via the `stl` function.
+
+```{r}
+# Convert measurement vector to time series object
+measurement_ts <- ts(d$TMin, 
+                     start=c(2013,1,1), update here~
+                     frequency = 365.25)
+
+# Perform decomposition into trend, seasonal, etc
+# Higher values of s.window make seasonal component more static
+stl_slim <- stats::stl(x = measurement_ts, 
+                       s.window = "periodic")
+
+# Put trend back into daily tibble
+df_slim_daily$Trend <- stl_slim$time.series[,'trend']
+```
+
+
+
+
+Let's use an ARIMA model to get at standard error.
+
+
+
+
 
 
 
