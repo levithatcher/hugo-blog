@@ -1,5 +1,5 @@
 ---
-title: "Studying SLC climate change via resampling techniques"
+title: "Studying 20th century SLC climate change"
 excerpt: "How has the winter changed in our lifetime?"
 date: '2018-02-09'
 ---
@@ -106,20 +106,48 @@ Let's now take the sum for each decade from 1950-2010 and see how they've change
 
 First, we'll calculate the means per decade with a naive 95% confidence interval.
 
+
 ```{r}
 d %>% 
-  filter(Site == 'SLC Intl') %>%
-  mutate(Decade = year(Date) - year(Date) %% 10) %>% 
-  group_by(Decade) %>% 
+  filter(Site == 'SLC Intl' & year(Date) > 1949 & year(Date) < 1960) %>% 
   mutate(Mean = base::mean(TMin, na.rm = TRUE),
          SD = stats::sd(TMin, na.rm = TRUE),
-         StdError = stats::sd(TMin, na.rm = TRUE) / n(),
-         CI = 1.96 * StdError) %>% 
-  
-  ggplot(., aes(x = Mean, y = Decade)) +
-    geom_point() +
-    geom_errorbarh(aes(xmin = Mean - CI, xmax = Mean + CI)) +
-    scale_y_continuous(breaks = c(1940, 1950, 1960, 1970, 1980, 1990, 2000, 2010)) +
+         Count = n(),
+         StdError = SD / n(),
+         CI = 1.96 * StdError)
+```
+
+Here's a naive view of average minimum temperature by decade. 
+
+```{r}
+dd <- d %>% 
+  filter(Site == 'SLC Intl' & year(Date) > 1949) %>%
+  mutate(Decade = year(Date) - (year(Date) %% 10)) %>% 
+  group_by(Decade) %>%
+  mutate(Mean = base::mean(TMin, na.rm = TRUE),
+         SD = stats::sd(TMin, na.rm = TRUE),
+         StdError = SD / sqrt(n()),
+         CI = 1.96 * StdError)
+```
+The error bars here are too small (hence the naivety) because of the auto-correlation in the dataset. Backing up a bit, since the temperature tomorrow is somewhat explained by the temperature yesterday, there's some auto-correlation that effectively reduces the degrees of freedom in the data. That means that things like standard errors and t-tests need to be adjusted (so that we don't mistakenly reject the null hypothesis).
+
+```{r}
+t <- acf(dd$TMin)
+t
+```
+
+
+```{r}  
+  ggplot(dd, aes(y = TMin, x = Decade)) +
+    #geom_point() +
+    stat_summary(fun.data = mean_cl_normal, conf.int = 0.95, geom = "errorbar") +
+    stat_summary(fun.y = mean, geom = "point") +
+    #geom_errorbar(aes(ymin = Mean - CI, ymax = Mean + CI, color = 'red')) +
+    scale_x_continuous(breaks = c(1940, 1950, 1960, 1970, 1980, 1990, 2000, 2010)) +
+    scale_y_continuous(breaks = c(36,37,38,39,40,41,42,43,44,45)) +
+    #scale_y_continuous(limits = c(33,40))
+    coord_cartesian(ylim = c(36,45))
+    
     
 ```
 
