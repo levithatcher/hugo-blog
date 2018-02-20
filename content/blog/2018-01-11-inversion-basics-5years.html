@@ -156,7 +156,7 @@ measurement_ts &lt;- ts(measurement_vect_daily,
 # Perform decomposition into trend, seasonal, etc
 # Higher values of s.window make seasonal component more static
 stl_slim &lt;- stats::stl(x = measurement_ts, 
-                       s.window = 15)
+                       s.window = &quot;periodic&quot;)
 
 # Put trend back into daily tibble
 df_slim_daily$Trend &lt;- stl_slim$time.series[,&#39;trend&#39;]
@@ -166,10 +166,10 @@ head(df_slim_daily, 4)</code></pre>
 <pre><code>## # A tibble: 4 x 3
 ##   Date       Measurement Trend
 ##   &lt;date&gt;           &lt;dbl&gt; &lt;dbl&gt;
-## 1 2013-01-01        23.0  16.2
-## 2 2013-01-02        26.5  16.2
-## 3 2013-01-03        37.1  16.2
-## 4 2013-01-04        41.5  16.1</code></pre>
+## 1 2013-01-01        23.0  16.3
+## 2 2013-01-02        26.5  16.3
+## 3 2013-01-03        37.1  16.3
+## 4 2013-01-04        41.5  16.2</code></pre>
 <p>Besides the <code>Date</code> column we have the raw daily <code>Measurements</code> as well as the <a href="https://en.wikipedia.org/wiki/Secular_variation">secular</a> <code>Trend</code> column. Let’s overlay these two to see what pollution progress (if any) SLC has made over the last five years.</p>
 <p>Note that the EPA is missing some daily readings from the winter of 2014-2015, so don’t focus on that dip.</p>
 <pre class="r"><code># Plot trend over daily data

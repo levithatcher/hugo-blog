@@ -178,7 +178,7 @@ measurement_ts <- ts(measurement_vect_daily,
 # Perform decomposition into trend, seasonal, etc
 # Higher values of s.window make seasonal component more static
 stl_slim <- stats::stl(x = measurement_ts, 
-                       s.window = 15)
+                       s.window = "periodic")
 
 # Put trend back into daily tibble
 df_slim_daily$Trend <- stl_slim$time.series[,'trend']
