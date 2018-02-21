@@ -135,6 +135,7 @@ A simple way to think about this, is that we need an adjustment factor for our s
 Note that to get at autocorrelation, one has to first remove the trend. We can do this via the `stl` function.
 
 ```{r}
+# Have to create ts object to feed into stl
 measurement_ts <- ts(d_small$TMin, 
                      start=c(1950,1,1), 
                      frequency = 365.25)
@@ -145,23 +146,34 @@ stl_slim <- stats::stl(x = measurement_ts,
 
 # Put de-trend data back into tibble
 d_small$DeTrendedTMin <- stl_slim$time.series[,'seasonal']
+
+# Create ts object (only for prais.winsten below)
+de_trended_ts <- ts(stl_slim$time.series[,'seasonal'])
 ```
 
-Now that we've de-trended the data, let's calculate the autocorrelation coefficient.
+Now that we've de-trended the data, let's calculate the autocorrelation coefficient via the [Prais Winsten estimator](https://en.wikipedia.org/wiki/Prais%E2%80%93Winsten_estimation). Note that this assumes an [AR(1) process](https://en.wikipedia.org/wiki/Autoregressive_model#Example:_An_AR.281.29_process). This means the underlying model is order 1, in that [only one preceding value](https://onlinecourses.science.psu.edu/stat501/node/358) in the time series is used to predict the value at the present time.
 
 ```{r}
 library(prais)
 
-formula = lm(measurement_ts ~ time(measurement_ts))
-res_pw <- prais.winsten(formula, data = measurement_ts, iter = 50, rho = 0, tol = 1e-08)
+model = lm(de_trended_ts ~ time(de_trended_ts))
+res_pw <- prais::prais.winsten(formula = model, 
+                               data = de_trended_ts, 
+                               iter = 50, 
+                               rho = 0, 
+                               tol = 1e-08)
 rho <- unlist(res_pw)$Rho
 ```
+
+with trend: rho: 0.939, f = 5.64
+w no trend: rho: 0.986, f = 12.06
 
 So autocorrelation is `r round(rho,2)`. Let's confirm that that makes sense via an autocorrelation plot (which doesn't just look back one step, but across all time)
 
 ```{r}
 stats::acf(x = d_small$DeTrendedTMin, type = "correlation")
 ```
+Yes, at very short time frames, the autocorrelation is between 0.9 and 1.0, so the Prais-Whitney rho (or autocorrelation) estimate looks reasonable.
 
 Now that we have an estimate of the autocorrelation coefficient (ρ or rho), we can use that in an correlation adjustment equation (borrowed from [here](https://en.wikipedia.org/wiki/Standard_error#Correction_for_correlation_in_the_sample)) that looks like this:
 
@@ -169,68 +181,6 @@ $$f = \sqrt \frac {1 + ρ}{1 - ρ}$$
 
 And a ρ of `r round(rho, 2)` means f = `r round(sqrt((1 + rho) / (1 - rho)), 2)`
 
-```{r}
-
-```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-```{r}
-library(boot)
-
-
-
-# ts_fun <- function(vect) {
-
-# r <- d %>%
-#   mutate(Decade = year(Date) - year(Date) %% 10) %>% 
-#   #group_by(Decade) %>% 
-#   select(TMin) %>% 
-#   #do(meany = mean(.$TMin, na.rm = TRUE)) 
-#   do(compute_block_boot(.$TMin))
-
-  
-```
-
-
-# d_small <- d %>%
-#   # Create decade column using modulus (ie, remainders)
-#   mutate(Decade = year(Date) - year(Date) %% 10) %>% 
-#   group_by(Decade) %>%
-#   broom::bootstrap(10, by_group = TRUE) %>% 
-#   do(tidy(mean(TMin)))
-```
-
-```{r}
-# res <- d %>%
-#  mutate(Decade = year(Date) - year(Date) %% 10) %>%
-#  group_by(Decade) %>%
-#  select(TMin) %>%
-#  modelr::bootstrap(100) %>%
-#  mutate(sepal_mean = map_dbl(strap, ~mean(as_data_frame(.x)$TMin)))
-#res
-```
-
-
-```{r}
-# plot(out, index=1)
-# ggplot(data = out, aes(x = out$t[,1])) +
-#   geom_point()
-```
 
 
 
