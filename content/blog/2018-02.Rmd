@@ -107,7 +107,7 @@ Let's now take the sum for each decade from 1950-2010 and see how they've change
 Note that we calculate the means per decade with a naive 95% confidence interval. Can you catch what's naive about it?
 
 ```{r}
-d_slim <- d %>% 
+d_small <- d %>% 
   filter(Site == 'SLC Intl' & year(Date) > 1949) %>%
   mutate(Decade = year(Date) - (year(Date) %% 10)) %>% 
   group_by(Decade) %>%
@@ -117,7 +117,7 @@ d_slim <- d %>%
          CI = 1.96 * StdError)
   
 
-ggplot(d_slim, aes(y = TMin, x = Decade)) +
+ggplot(d_small, aes(y = TMin, x = Decade)) +
   #geom_point() +
   #stat_summary(fun.data = mean_cl_normal, conf.int = 0.95, geom = "errorbar") +
   stat_summary(fun.y = mean, geom = "point") +
@@ -135,7 +135,7 @@ A simple way to think about this, is that we need an adjustment factor for our s
 Note that to get at autocorrelation, one has to first remove the trend. We can do this via the `stl` function.
 
 ```{r}
-measurement_ts <- ts(d_slim$TMin, 
+measurement_ts <- ts(d_small$TMin, 
                      start=c(1950,1,1), 
                      frequency = 365.25)
 
@@ -144,21 +144,34 @@ stl_slim <- stats::stl(x = measurement_ts,
                        s.window = "periodic")
 
 # Put de-trend data back into tibble
-d_slim$DeTrendedTMin <- stl_slim$time.series[,'seasonal']
+d_small$DeTrendedTMin <- stl_slim$time.series[,'seasonal']
 ```
 
 Now that we've de-trended the data, let's calculate the autocorrelation coefficient.
 
+```{r}
+library(prais)
+
+formula = lm(measurement_ts ~ time(measurement_ts))
+res_pw <- prais.winsten(formula, data = measurement_ts, iter = 50, rho = 0, tol = 1e-08)
+rho <- unlist(res_pw)$Rho
+```
+
+So autocorrelation is `r round(rho,2)`. Let's confirm that that makes sense via an autocorrelation plot (which doesn't just look back one step, but across all time)
+
+```{r}
+stats::acf(x = d_small$DeTrendedTMin, type = "correlation")
+```
+
+Now that we have an estimate of the autocorrelation coefficient (ρ or rho), we can use that in an correlation adjustment equation (borrowed from [here](https://en.wikipedia.org/wiki/Standard_error#Correction_for_correlation_in_the_sample)) that looks like this:
+
+$$f = \sqrt \frac {1 + ρ}{1 - ρ}$$
+
+And a ρ of `r round(rho, 2)` means f = `r round(sqrt((1 + rho) / (1 - rho)), 2)`
 
 ```{r}
 
-res <- stats::acf(x = d_slim$DeTrendedTMin, type = "correlation")
-
-mean_auto_corr <- mean(res$acf)
-
 ```
-
-
 
 
 
