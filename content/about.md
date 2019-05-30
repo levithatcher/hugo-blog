@@ -15,4 +15,4 @@ Levi did his graduate work at the University of Utah, studying atmospheric predi
  
 At Health Catalyst, Levi led the company’s machine learning efforts, built the team of five data scientists, and founded [healthcare.ai](http://healthcare.ai), the first open-source machine learning software for healthcare.
 
-As of August 2018, Levi is excited for his move to Pluralsight in SLC, where he'll be focusing on product experiments and ML.
+As of August 2018, Levi is excited for his move to Pluralsight in SLC, where he'll be focusing on data driven product development.
