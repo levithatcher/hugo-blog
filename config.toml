@@ -22,7 +22,7 @@ enableRobotsTXT = true
 [params]
 author = "Levi Thatcher"
 intro = "Purveyer of data infrastructure"
-description = "Experiments and ML at Pluralsight; founder, healthcare.ai"
+description = "Principal Data Scientist at Pluralsight; founder, healthcare.ai"
 staticDir = "static"
 
 authorimage = "headshot.jpg"
