@@ -21,7 +21,6 @@ enableRobotsTXT = true
 ## Site Settings
 [params]
 author = "Levi Thatcher"
-intro = "Purveyer of data infrastructure"
 description = "Principal Data Scientist at Pluralsight; founder, healthcare.ai"
 staticDir = "static"
 
