@@ -2,7 +2,7 @@
 title: "US Presidential Popular Vote Margins"
 excerpt: "Since 1976 who's won big?"
 date: '2020-11-08'
-draft: true
+draft: false
 showpagemeta: true
 ---
 
