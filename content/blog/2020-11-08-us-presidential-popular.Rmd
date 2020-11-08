@@ -6,6 +6,13 @@ draft: no
 showpagemeta: yes
 ---
 
+```{r setup, include=FALSE}
+library(knitr)
+knitr::opts_chunk$set(cache = TRUE, warning = FALSE, message = FALSE, 
+                      echo = TRUE, dev = 'png',
+                      dpi = 200, out.width='650px', fig.width=8, fig.height=4)
+```
+
 ```{r message=FALSE, warning=FALSE, include=FALSE}
 library(tidyverse)
 ```
