@@ -2,8 +2,8 @@
 title: "US Presidential Popular Vote Margins"
 excerpt: "Since 1976 who's won big?"
 date: '2020-11-08'
-draft: false
-showpagemeta: true
+draft: no
+showpagemeta: yes
 ---
 
 ```{r message=FALSE, warning=FALSE, include=FALSE}
