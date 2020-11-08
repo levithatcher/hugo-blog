@@ -1,0 +1,68 @@
+---
+title: "US Presidential Popular Vote Margins"
+excerpt: "Since 1976 who's won big?"
+date: '2020-11-08'
+draft: true
+showpagemeta: true
+---
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
+library(tidyverse)
+```
+
+Let's look at the margin of victory of US presidents since 1976. Here we find the 
+vote count for the democratic and republican candidate each year, and calculate the 
+percentage difference between the two (such that the democratic victory 
+`dem_perc_winloss` is postive.)
+
+We pull the [U.S. President 1976–2016 dataset](https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/42MVDX)
+from the [MIT election lab](https://electionlab.mit.edu/data).
+
+```{r message=FALSE, warning=FALSE, include=FALSE}
+df <- read_csv('../data/1976-2016-president.csv')
+```
+
+
+```{r include=FALSE}
+df_before_2020 <- df %>%
+  # In Minnesota, Ds run under weird party name
+  mutate(party = ifelse(party == 'democratic-farmer-labor', 'democrat', party),
+         party = ifelse(party == 'democratic', 'democrat', party)) %>%  
+  filter(party %in% c('republican','democrat'),
+         !str_detect(candidate,'Gritz, James'), # Ran as democrat/republican
+         writein == FALSE) %>%
+  group_by(year, candidate, party) %>%
+  summarize(candidate_votes = sum(candidatevotes)) %>% 
+  pivot_wider(names_from=party, values_from=c(candidate, candidate_votes))
+```
+
+For the 2020 election, let's add in results from the
+[WSJ](https://www.wsj.com/election-results-2020/) as of Nov 8 2020. At that time
+it showed 75.2M votes for Joe Biden and 70.8M votes cast for Donald Trump.
+
+```{r echo=FALSE}
+library(knitr)
+df_2020 <- tibble(year = 2020,
+                  candidate_democrat = 'Joe Biden',
+                  candidate_republican = 'Donald Trump',
+                  candidate_votes_democrat = 75215986,
+                  candidate_votes_republican = 70812803) 
+
+d_combined <- dplyr::bind_rows(df_before_2020, df_2020)
+
+d_combined %>%
+  mutate(dem_perc_winloss = 100 * ((candidate_votes_democrat - 
+                                    candidate_votes_republican) / 
+                                       candidate_votes_democrat)) %>% 
+  # Make cols names more readable
+  rename(dem_candidate = candidate_democrat,
+         repub_candidate = candidate_republican,
+         dem_votes = candidate_votes_democrat,
+         repub_votes = candidate_votes_republican) %>% 
+  knitr::kable()
+```
+
+Overall, it's amazing how the vote margins have shrunk compared to elections in the
+80s and 90s. **In terms of the current election, it appears that Joe Biden has achieved
+a larger popular vote victory than any Republican president since George HW Bush's 
+victory in 1988, 32 years ago.**
