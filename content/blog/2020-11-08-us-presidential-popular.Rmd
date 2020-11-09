@@ -55,8 +55,8 @@ column below). *Note, this isn't percentage of total votes, but percentage betwe
 ```{r include=FALSE}
 library(knitr)
 df_2020 <- tibble(year = 2020,
-                  candidate_democrat = 'Joe Biden',
-                  candidate_republican = 'Donald Trump',
+                  candidate_democrat = 'Biden, Joe',
+                  candidate_republican = 'Trump, Donald J.',
                   candidate_votes_democrat = 75215986,
                   candidate_votes_republican = 70812803) 
 
