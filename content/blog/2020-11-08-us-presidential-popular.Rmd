@@ -19,7 +19,7 @@ library(tidyverse)
 ```
 
 Let's look at the margin of victory of US presidents since 1976. Here we find the 
-vote count for the democratic and republican candidate each year, and calculate the 
+vote count for the Democratic and Republican candidate each year, and calculate the 
 percentage difference between the two.
 
 We first pull the [U.S. President 1976–2016 dataset](https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/42MVDX)
